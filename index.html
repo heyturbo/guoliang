@@ -1,132 +1,127 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>紫薇通灵模拟器</title>
+    <title>至尊五行符仙葫模拟器</title>
     <style>
         body {
-            background-color: #cebc8b;
-            font-family: '黑体', sans-serif;
+            background-color: #000000;
+            color: #000000;
+            font-family: '黑体';
+            font-size: 24px;
+            font-weight: bold;
             text-align: center;
         }
         button {
-            font-size: 24px;
-            font-weight: bold;
             margin: 10px;
+            font-size: 24px;
         }
-        #result {
+        #results, #stats {
             margin-top: 20px;
             border: 1px solid black;
             background-color: white;
+            color: black;
             font-size: 20px;
-            padding: 15px;
-            height: 150px;
-            overflow-y: auto;
+            padding: 10px;
+            width: 70%;
+            margin-left: auto;
+            margin-right: auto;
         }
-        .red-bold {
-            color: red;
-            font-weight: bold;
-        }
-        .special-message {
-            font-size: 36px;
-            font-style: italic;
-            font-weight: bold;
-            color: red;
-        }
+        .red { color: red; }
+        .blue { color: blue; }
+        .orange { color: orange; }
+        .green { color: green; }
+        .purple { color: purple; }
     </style>
 </head>
 <body>
-    <h1>紫薇通灵模拟器</h1>
-    <button onclick="performDivination()">通灵</button>
-    <button onclick="resetDivination()">清零</button>
-    <div id="result"></div>
-    <div id="counter">已通灵0次</div>
-    <div id="cost">您已消耗价值0元的紫薇教通灵</div>
-    <div id="specialMessage"></div>
+    <h1>至尊五行符仙葫模拟器</h1>
+    <button onclick="openOnce()">开一次</button>
+    <button onclick="openTen()">十连</button>
+    <div id="results">结果将显示在这里</div>
+    <div id="stats">统计信息将显示在这里</div>
+    <button onclick="reset()">清零</button>
 
     <script>
-        let divinationCount = 0;
-        let divinationCost = 0;
-        const attributes = [
-            "敏捷:90-180", "信仰:90-180", "耐力:90-180", "‰ HP上限:18-36", "‰ 法术攻击:18-36",
-            "物理攻击:700-1300", "法术攻击:700-1300", "‰ 物理攻击:18-36", "恢复:900-1300",
-            "法术暴击:200-500", "法术暴击抵抗:200-500", "法术闪避:200-500", "忽视法术闪避:200-500",
-            "法术命中:200-500", "物理暴击:200-500", "物理暴击抵抗:200-500", "物理闪避:200-500",
-            "忽视物理闪避:200-500", "物理命中:200-500"
+        const elements = ["金", "木", "水", "火", "土"];
+        const qualities = ["一等", "二等", "三等", "四等", "五等"];
+        const colors = ["red", "blue", "orange", "green", "purple"];
+        const probabilities = [
+            1.38, 3, 4.2, 6, 5.4, // 一等到五等的概率
         ];
+        let counts = {};
+        let totalOpens = 0;
+        let totalCost = 0;
 
-        function getRandomResult() {
-            const results = [];
-            const counts = [1, 2, 3, 4, 5];
-            const probabilities = [0.25, 0.25, 0.20, 0.20, 0.10];
-            const resultCount = counts[weightedRandom(probabilities)];
-            for (let i = 0; i < resultCount; i++) {
-                const attr = attributes[Math.floor(Math.random() * attributes.length)];
-                const parts = attr.split(':');
-                const range = parts[1].split('-').map(Number);
-                const value = Math.floor(Math.random() * (range[1] - range[0] + 1)) + range[0];
-                results.push(`${value} ${parts[0]}`);
+        function randomResult() {
+            let elementIndex = Math.floor(Math.random() * elements.length);
+            let qualityIndex = weightedRandom(probabilities);
+            let colorIndex = Math.floor(Math.random() * colors.length);
+
+            let element = elements[elementIndex];
+            let quality = qualities[qualityIndex];
+            let color = colors[colorIndex];
+
+            let result = `<span class="${color}">${element}符 ${quality}</span>`;
+            updateCounts(`${element}符 ${quality}`);
+            return result;
+        }
+
+        function weightedRandom(weights) {
+            let totalWeight = weights.reduce((acc, cur) => acc + cur, 0);
+            let r = Math.random() * totalWeight;
+            let weightSum = 0;
+
+            for (let i = 0; i < weights.length; i++) {
+                weightSum += weights[i];
+                if (r <= weightSum) return i;
             }
-            return results;
+            return 0;
         }
 
-        function weightedRandom(probabilities) {
-            const rand = Math.random();
-            let sum = 0;
-            for (let i = 0; i < probabilities.length; i++) {
-                sum += probabilities[i];
-                if (rand <= sum) return i;
+        function openOnce() {
+            let result = randomResult();
+            document.getElementById('results').innerHTML = result;
+            updateStats();
+        }
+
+        function openTen() {
+            let results = [];
+            for (let i = 0; i < 10; i++) {
+                results.push(randomResult());
             }
+            document.getElementById('results').innerHTML = results.join("<br>");
+            updateStats();
         }
 
-        function performDivination() {
-            const results = getRandomResult();
-            const resultElement = document.getElementById('result');
-            resultElement.innerHTML = results.join('<br>');
-
-            divinationCount++;
-            divinationCost = 6.5 * divinationCount;
-            document.getElementById('counter').innerHTML = `已通灵<span class="red-bold">${divinationCount}</span>次`;
-            document.getElementById('cost').innerHTML = `您已消耗价值<span class="red-bold">${divinationCost.toFixed(2)}</span>元的紫薇教通灵`;
-
-            checkSpecialMessage(results);
+        function updateCounts(result) {
+            counts[result] = (counts[result] || 0) + 1;
+            totalOpens++;
+            totalCost += 9.5;
         }
 
-        function checkSpecialMessage(results) {
-            const specialAttributes = ['敏捷', '‰ 物理攻击', '‰ 法术攻击', '‰ HP上限'];
-            const countMap = {};
-            results.forEach(result => {
-                const attribute = result.split(' ')[1];
-                if (specialAttributes.includes(attribute)) {
-                    if (!countMap[attribute]) countMap[attribute] = { count: 0, totalValue: 0 };
-                    countMap[attribute].count++;
-                    countMap[attribute].totalValue += parseInt(result.split(' ')[0], 10);
+        function updateStats() {
+            let statsHTML = `已开启<span class="red">${totalOpens}</span>次<br>`;
+            statsHTML += `您已消耗价值<span class="red">${totalCost.toFixed(2)}</span>元的至尊五星符仙葫<br>`;
+            for (let key in counts) {
+                statsHTML += `${key}: ${counts[key]}次<br>`;
+            }
+            document.getElementById('stats').innerHTML = statsHTML;
+
+            if (totalOpens % 100 === 0) {
+                let rareCount = elements.reduce((sum, el) => sum + (counts[`${el}符 一等`] || 0), 0);
+                if (rareCount < 5) {
+                    alert("非酋，还不收手吗？");
                 }
-            });
-
-            const specialMessageElement = document.getElementById('specialMessage');
-            specialMessageElement.innerHTML = '';
-            for (const attr in countMap) {
-                if (countMap[attr].count >= 2) {
-                    specialMessageElement.innerHTML = '出货啦！';
-                    if (attr === '敏捷' && countMap[attr].totalValue > 300 ||
-                        (attr.includes('‰') && countMap[attr].totalValue > 59)) {
-                        if (confirm(`您确定要换掉吗？`)) {
-                            performDivination();
-                            return;
-                        }
-                    }
-                }
             }
         }
 
-        function resetDivination() {
-            divinationCount = 0;
-            divinationCost = 0;
-            document.getElementById('counter').innerHTML = `已通灵0次`;
-            document.getElementById('cost').innerHTML = `您已消耗价值0元的紫薇教通灵`;
-            document.getElementById('result').innerHTML = '';
-            document.getElementById('specialMessage').innerHTML = '';
+        function reset() {
+            counts = {};
+            totalOpens = 0;
+            totalCost = 0;
+            document.getElementById('results').innerHTML = "结果将显示在这里";
+            document.getElementById('stats').innerHTML = "统计信息将显示在这里";
         }
     </script>
 </body>
