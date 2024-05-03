@@ -45,7 +45,7 @@
 <body>
     <h1>至尊五行符仙葫模拟器</h1>
     <div id="goldDisplay">金币: 1000</div>
-    <button onclick="simulate(1)">开一次</button>
+    <button onclick="simulate(1)">开一次</button> <span id="countDisplay">开启次数: 0</span>
     <button onclick="simulate(10)">十连</button>
     <div id="resultDisplay" class="display"></div>
     <div id="statisticsDisplay" class="display statistics"></div>
@@ -56,8 +56,9 @@
     <script>
         let gold = 1000;
         let totalValue = 0;
-        let statistics = [0, 0, 0, 0, 0];
-        const valueMap = [84, 12.6, 2.6, 0.5, 0.1];
+        let statistics = [0, 0, 0, 0, 0];  // 一等到五等
+        let count = 0;  // 新增计数变量
+        const valueMap = [0.1, 0.5, 2.6, 12.6, 84];
         const elements = ['金符', '木符', '水符', '火符', '土符'];
         const colors = ['red', 'blue', 'orange', 'green', 'purple'];
         const probabilities = [
@@ -86,40 +87,44 @@
                 return;
             }
             gold -= 9.5 * times;
+            count += times;  // 更新计数
             let results = [];
             for (let i = 0; i < times; i++) {
                 const result = getRandomResult();
                 totalValue += valueMap[result.quality - 1];
-                statistics[result.quality - 1]++;
+                statistics[5 - result.quality]++;  // 修正统计的索引
                 results.push(`<span class="result-item" style="color: ${result.color}">${result.element} ${result.quality}等</span>`);
             }
-            document.getElementById("resultDisplay").innerHTML = results.join(' ');
+            document.getElementById('goldDisplay').innerHTML = `金币: ${gold.toFixed(2)}`;
+            document.getElementById('countDisplay').innerHTML = `开启次数: ${count}`;
+            document.getElementById('resultDisplay').innerHTML = results.join('');
             updateDisplays();
         }
 
         function updateDisplays() {
-            document.getElementById("goldDisplay").textContent = `金币: ${gold.toFixed(2)}`;
-            document.getElementById("statisticsDisplay").innerHTML = statistics.map((count, index) => `${5 - index}等: ${count}`).join(' | ');
-            document.getElementById("outputValueDisplay").textContent = `出货价值: ${totalValue.toFixed(2)}`;
+            let statsHtml = statistics.map((stat, index) => `${5 - index}等: ${stat}`).join('<br>');
+            document.getElementById('statisticsDisplay').innerHTML = statsHtml;
+            document.getElementById('outputValueDisplay').innerHTML = `总价值: ${totalValue.toFixed(2)}`;
         }
 
         function sell() {
             gold += totalValue;
             totalValue = 0;
-            statistics.fill(0);
+            statistics = [0, 0, 0, 0, 0];
             updateDisplays();
-            document.getElementById("resultDisplay").innerHTML = "已贩卖所有符咒";
+            document.getElementById('goldDisplay').innerHTML = `金币: ${gold.toFixed(2)}`;
         }
 
         function reset() {
             gold = 1000;
             totalValue = 0;
-            statistics.fill(0);
+            statistics = [0, 0, 0, 0, 0];
+            count = 0;
+            document.getElementById('resultDisplay').innerHTML = '';
             updateDisplays();
-            document.getElementById("resultDisplay").innerHTML = "";
+            document.getElementById('goldDisplay').innerHTML = `金币: ${gold.toFixed(2)}`;
+            document.getElementById('countDisplay').innerHTML = `开启次数: ${count}`;
         }
-
-        updateDisplays();
     </script>
 </body>
 </html>
