@@ -1,101 +1,125 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<title>至尊五行符仙葫模拟器</title>
-<style>
-    body { background-color: #000000; color: #000000; font-family: '黑体'; font-size: 24px; font-weight: bold; }
-    #goldDisplay, #openCount, #consumedValue { color: red; font-weight: bold; }
-    button { margin: 5px; }
-    .result, .stats, .value { border: 1px solid black; background-color: white; padding: 10px; margin-top: 5px; text-align: center; }
-    .stats div, .value div { display: inline-block; width: 19%; }
-</style>
+    <meta charset="UTF-8">
+    <title>至尊五行符仙葫模拟器</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            color: #333;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        #goldDisplay {
+            color: #d4af37;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .display {
+            border: 1px solid #ccc;
+            background-color: #fff;
+            color: #333;
+            margin: 10px auto;
+            padding: 10px;
+            width: 80%;
+        }
+        .statistics, .outputValue {
+            display: flex;
+            justify-content: space-around;
+        }
+        .result-item {
+            margin: 5px;
+            padding: 5px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
-<div id="goldDisplay">金币: 1000</div>
-<button onclick="openSimulator(false)">开一次</button>
-<button onclick="openSimulator(true)">十连</button>
-<div id="resultArea" class="result">结果显示区域</div>
-<div id="statsArea" class="stats">
-    <div>金符</div><div>木符</div><div>水符</div><div>火符</div><div>土符</div>
-</div>
-<div id="valueArea" class="value">出货价值区域</div>
-<button onclick="sell()">贩卖</button>
-<button onclick="reset()">清零</button>
-<script>
-    const elements = {
-        goldDisplay: document.getElementById('goldDisplay'),
-        resultArea: document.getElementById('resultArea'),
-        statsArea: document.getElementById('statsArea'),
-        valueArea: document.getElementById('valueArea')
-    };
-    let gold = 1000, openCount = 0, consumedValue = 0, totalValue = 0, stats = {金: [0, 0, 0, 0, 0], 木: [0, 0, 0, 0, 0], 水: [0, 0, 0, 0, 0], 火: [0, 0, 0, 0, 0], 土: [0, 0, 0, 0, 0]};
-    const symbolTypes = ['金', '木', '水', '火', '土'];
-    const qualityValues = [84, 12.6, 2.6, 0.5, 0.5];
-    const qualityColors = ['red', 'blue', 'orange', 'green', 'purple'];
-    const probabilities = [0.38, 4, 4.2, 6, 5.4];
+    <h1>至尊五行符仙葫模拟器</h1>
+    <div id="goldDisplay">金币: 1000</div>
+    <button onclick="simulate(1)">开一次</button>
+    <button onclick="simulate(10)">十连</button>
+    <div id="resultDisplay" class="display"></div>
+    <div id="statisticsDisplay" class="display statistics"></div>
+    <div id="outputValueDisplay" class="display outputValue"></div>
+    <button onclick="sell()">贩卖</button>
+    <button onclick="reset()">清零</button>
 
-    function randomResult() {
-        let rand = Math.random() * 100;
-        let cumulative = 0;
-        for (let quality = 0; quality < 5; quality++) {
-            for (let type = 0; type < 5; type++) {
-                cumulative += probabilities[quality];
-                if (rand < cumulative) {
-                    let color = qualityColors[Math.floor(Math.random() * 5)];
-                    return { symbol: symbolTypes[type], quality, color };
+    <script>
+        let gold = 1000;
+        let totalValue = 0;
+        let statistics = [0, 0, 0, 0, 0];
+        const valueMap = [84, 12.6, 2.6, 0.5, 0.1];
+        const elements = ['金符', '木符', '水符', '火符', '土符'];
+        const colors = ['red', 'blue', 'orange', 'green', 'purple'];
+        const probabilities = [
+            {prob: 5.4, quality: 5}, {prob: 6, quality: 4},
+            {prob: 4.2, quality: 3}, {prob: 3, quality: 2},
+            {prob: 1.38, quality: 1}
+        ];
+
+        function getRandomResult() {
+            let random = Math.random() * 100;
+            let cumulativeProb = 0;
+            for (let i = 0; i < probabilities.length; i++) {
+                for (let j = 0; j < elements.length; j++) {
+                    cumulativeProb += probabilities[i].prob;
+                    if (random < cumulativeProb) {
+                        const color = colors[Math.floor(Math.random() * colors.length)];
+                        return { element: elements[j], quality: probabilities[i].quality, color };
+                    }
                 }
             }
         }
-    }
 
-    function displayResult(result) {
-        return `<span style='color: ${result.color}'>${result.symbol}符 ${5-result.quality}等</span>`;
-    }
-
-    function updateDisplay() {
-        elements.goldDisplay.innerHTML = `金币: ${gold.toFixed(1)}`;
-        elements.valueArea.innerHTML = `您累计开出价值${totalValue.toFixed(1)}元的五行符`;
-        let statsHtml = '';
-        symbolTypes.forEach((type, index) => {
-            statsHtml += `<div>${stats[type].map((count, i) => `${5-i}等: ${count}`).join('<br>')}</div>`;
-        });
-        elements.statsArea.innerHTML = statsHtml;
-    }
-
-    function openSimulator(tenTimes) {
-        if (gold < 9.5) {
-            alert('赌海无涯，回头是岸');
-            reset();
-            return;
+        function simulate(times) {
+            if (gold < 9.5 * times) {
+                alert("金币不足！");
+                return;
+            }
+            gold -= 9.5 * times;
+            let results = [];
+            for (let i = 0; i < times; i++) {
+                const result = getRandomResult();
+                totalValue += valueMap[result.quality - 1];
+                statistics[result.quality - 1]++;
+                results.push(`<span class="result-item" style="color: ${result.color}">${result.element} ${result.quality}等</span>`);
+            }
+            document.getElementById("resultDisplay").innerHTML = results.join(' ');
+            updateDisplays();
         }
-        let results = [];
-        let count = tenTimes ? 10 : 1;
-        for (let i = 0; i < count; i++) {
-            let result = randomResult();
-            results.push(result);
-            stats[result.symbol][result.quality]++;
-            totalValue += qualityValues[result.quality];
-            gold -= 9.5;
+
+        function updateDisplays() {
+            document.getElementById("goldDisplay").textContent = `金币: ${gold.toFixed(2)}`;
+            document.getElementById("statisticsDisplay").innerHTML = statistics.map((count, index) => `${5 - index}等: ${count}`).join(' | ');
+            document.getElementById("outputValueDisplay").textContent = `出货价值: ${totalValue.toFixed(2)}`;
         }
-        elements.resultArea.innerHTML = results.map(displayResult).join('<br>');
-        updateDisplay();
-    }
 
-    function sell() {
-        stats = {金: [0, 0, 0, 0, 0], 木: [0, 0, 0, 0, 0], 水: [0, 0, 0, 0, 0], 火: [0, 0, 0, 0, 0], 土: [0, 0, 0, 0, 0]};
-        totalValue = 0;
-        updateDisplay();
-    }
+        function sell() {
+            gold += totalValue;
+            totalValue = 0;
+            statistics.fill(0);
+            updateDisplays();
+            document.getElementById("resultDisplay").innerHTML = "已贩卖所有符咒";
+        }
 
-    function reset() {
-        gold = 1000;
-        totalValue = 0;
-        stats = {金: [0, 0, 0, 0, 0], 木: [0, 0, 0, 0, 0], 水: [0, 0, 0, 0, 0], 火: [0, 0, 0, 0, 0], 土: [0, 0, 0, 0, 0]};
-        updateDisplay();
-    }
+        function reset() {
+            gold = 1000;
+            totalValue = 0;
+            statistics.fill(0);
+            updateDisplays();
+            document.getElementById("resultDisplay").innerHTML = "";
+        }
 
-    updateDisplay();
-</script>
+        updateDisplays();
+    </script>
 </body>
 </html>
