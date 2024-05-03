@@ -4,140 +4,98 @@
 <meta charset="UTF-8">
 <title>至尊五行符仙葫模拟器</title>
 <style>
-    body {
-        font-family: '黑体';
-        background-color: #000000;
-        color: white;
-        text-align: center;
-    }
-    .button {
-        margin: 10px;
-        padding: 10px 20px;
-        font-size: 24px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    #goldDisplay {
-        font-weight: bold;
-        color: red;
-        font-size: 20px;
-    }
-    .result-area, .stats-area, .value-area {
-        border: 1px solid black;
-        background-color: white;
-        color: black;
-        margin: 10px auto;
-        padding: 10px;
-        width: 90%;
-        font-size: 20px;
-    }
-    .stats-area {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-    }
+    body { background-color: #000000; color: #000000; font-family: '黑体'; font-size: 24px; font-weight: bold; }
+    #goldDisplay, #openCount, #consumedValue { color: red; font-weight: bold; }
+    button { margin: 5px; }
+    .result, .stats, .value { border: 1px solid black; background-color: white; padding: 10px; margin-top: 5px; text-align: center; }
+    .stats div, .value div { display: inline-block; width: 19%; }
 </style>
 </head>
 <body>
-<h1>至尊五行符仙葫模拟器</h1>
 <div id="goldDisplay">金币: 1000</div>
-<button class="button" onclick="openOnce()">开一次</button>
-<button class="button" onclick="openTen()">十连</button>
-<div class="result-area" id="resultDisplay">结果显示区域</div>
-<div class="stats-area" id="statsDisplay">结果统计区域</div>
-<div class="value-area" id="valueDisplay">出货价值区域</div>
-<button class="button" onclick="sell()">贩卖</button>
-<button class="button" onclick="reset()">清零</button>
-
+<button onclick="openSimulator(false)">开一次</button>
+<button onclick="openSimulator(true)">十连</button>
+<div id="resultArea" class="result">结果显示区域</div>
+<div id="statsArea" class="stats">
+    <div>金符</div><div>木符</div><div>水符</div><div>火符</div><div>土符</div>
+</div>
+<div id="valueArea" class="value">出货价值区域</div>
+<button onclick="sell()">贩卖</button>
+<button onclick="reset()">清零</button>
 <script>
-    let gold = 1000;
-    let openCount = 0;
-    let consumedValue = 0;
-    let accruedValue = 0;
-    let results = {'金符': [0, 0, 0, 0, 0], '木符': [0, 0, 0, 0, 0], '水符': [0, 0, 0, 0, 0], '火符': [0, 0, 0, 0, 0], '土符': [0, 0, 0, 0, 0]};
-    const elements = ['金符', '木符', '水符', '火符', '土符'];
-    const qualities = ['一等', '二等', '三等', '四等', '五等'];
-    const colors = ['red', 'blue', 'orange', 'green', 'purple'];
+    const elements = {
+        goldDisplay: document.getElementById('goldDisplay'),
+        resultArea: document.getElementById('resultArea'),
+        statsArea: document.getElementById('statsArea'),
+        valueArea: document.getElementById('valueArea')
+    };
+    let gold = 1000, openCount = 0, consumedValue = 0, totalValue = 0, stats = {金: [0, 0, 0, 0, 0], 木: [0, 0, 0, 0, 0], 水: [0, 0, 0, 0, 0], 火: [0, 0, 0, 0, 0], 土: [0, 0, 0, 0, 0]};
+    const symbolTypes = ['金', '木', '水', '火', '土'];
     const qualityValues = [84, 12.6, 2.6, 0.5, 0.5];
-    const probabilityMap = [
-        0.0138, 0.03, 0.042, 0.06, 0.054, // First element probabilities for each quality
-        0.0138, 0.03, 0.042, 0.06, 0.054,
-        0.0138, 0.03, 0.042, 0.06, 0.054,
-        0.0138, 0.03, 0.042, 0.06, 0.054,
-        0.0138, 0.03, 0.042, 0.06, 0.054
-    ];
+    const qualityColors = ['red', 'blue', 'orange', 'green', 'purple'];
+    const probabilities = [0.38, 4, 4.2, 6, 5.4];
 
-    function getRandomElement() {
-        let rand = Math.random();
-        let sum = 0;
-        for (let i = 0; i < probabilityMap.length; i++) {
-            sum += probabilityMap[i];
-            if (rand < sum) {
-                return {
-                    element: elements[Math.floor(i / 5)],
-                    quality: qualities[i % 5],
-                    color: colors[Math.floor(Math.random() * 5)]
-                };
+    function randomResult() {
+        let rand = Math.random() * 100;
+        let cumulative = 0;
+        for (let quality = 0; quality < 5; quality++) {
+            for (let type = 0; type < 5; type++) {
+                cumulative += probabilities[quality];
+                if (rand < cumulative) {
+                    let color = qualityColors[Math.floor(Math.random() * 5)];
+                    return { symbol: symbolTypes[type], quality, color };
+                }
             }
         }
     }
 
-    function updateDisplays() {
-        document.getElementById('goldDisplay').textContent = '金币: ' + gold.toFixed(1);
-        document.getElementById('resultDisplay').textContent = '';
-        document.getElementById('statsDisplay').textContent = '';
-        elements.forEach((elem, idx) => {
-            for (let i = 0; i < 5; i++) {
-                let div = document.createElement('div');
-                div.textContent = `${elem} ${qualities[i]}: ${results[elem][i]}`;
-                document.getElementById('statsDisplay').appendChild(div);
-            }
+    function displayResult(result) {
+        return `<span style='color: ${result.color}'>${result.symbol}符 ${5-result.quality}等</span>`;
+    }
+
+    function updateDisplay() {
+        elements.goldDisplay.innerHTML = `金币: ${gold.toFixed(1)}`;
+        elements.valueArea.innerHTML = `您累计开出价值${totalValue.toFixed(1)}元的五行符`;
+        let statsHtml = '';
+        symbolTypes.forEach((type, index) => {
+            statsHtml += `<div>${stats[type].map((count, i) => `${5-i}等: ${count}`).join('<br>')}</div>`;
         });
-        document.getElementById('valueDisplay').textContent = `消耗价值：${consumedValue.toFixed(1)} 金币，累计价值：${accruedValue.toFixed(1)} 金币`;
+        elements.statsArea.innerHTML = statsHtml;
     }
 
-    function openOnce() {
+    function openSimulator(tenTimes) {
         if (gold < 9.5) {
-            alert('金币不足，无法开启！');
+            alert('赌海无涯，回头是岸');
+            reset();
             return;
         }
-        gold -= 9.5;
-        openCount++;
-        consumedValue += 9.5;
-        let result = getRandomElement();
-        results[result.element][qualities.indexOf(result.quality)]++;
-        accruedValue += qualityValues[qualities.indexOf(result.quality)];
-        document.getElementById('resultDisplay').textContent = `你获得了一个${result.color}色的${result.element} ${result.quality}`;
-        updateDisplays();
-    }
-
-    function openTen() {
-        if (gold < 95) {
-            alert('金币不足，无法进行十连！');
-            return;
+        let results = [];
+        let count = tenTimes ? 10 : 1;
+        for (let i = 0; i < count; i++) {
+            let result = randomResult();
+            results.push(result);
+            stats[result.symbol][result.quality]++;
+            totalValue += qualityValues[result.quality];
+            gold -= 9.5;
         }
-        gold -= 95;
-        for (let i = 0; i < 10; i++) {
-            openOnce();
-        }
+        elements.resultArea.innerHTML = results.map(displayResult).join('<br>');
+        updateDisplay();
     }
 
     function sell() {
-        // 假设每次贩卖都可以将累计价值转换为金币
-        gold += accruedValue;
-        accruedValue = 0;
-        updateDisplays();
+        stats = {金: [0, 0, 0, 0, 0], 木: [0, 0, 0, 0, 0], 水: [0, 0, 0, 0, 0], 火: [0, 0, 0, 0, 0], 土: [0, 0, 0, 0, 0]};
+        totalValue = 0;
+        updateDisplay();
     }
 
     function reset() {
         gold = 1000;
-        openCount = 0;
-        consumedValue = 0;
-        accruedValue = 0;
-        results = {'金符': [0, 0, 0, 0, 0], '木符': [0, 0, 0, 0, 0], '水符': [0, 0, 0, 0, 0], '火符': [0, 0, 0, 0, 0], '土符': [0, 0, 0, 0, 0]};
-        updateDisplays();
+        totalValue = 0;
+        stats = {金: [0, 0, 0, 0, 0], 木: [0, 0, 0, 0, 0], 水: [0, 0, 0, 0, 0], 火: [0, 0, 0, 0, 0], 土: [0, 0, 0, 0, 0]};
+        updateDisplay();
     }
 
-    updateDisplays();
+    updateDisplay();
 </script>
 </body>
 </html>
