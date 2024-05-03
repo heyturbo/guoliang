@@ -44,7 +44,7 @@
 </head>
 <body>
     <h1>至尊五行符仙葫模拟器</h1>
-    <div id="goldDisplay">金币: 9500</div>
+    <div id="goldDisplay">金币: 18000</div>
     <button onclick="simulate(1)">开一次</button> <span id="countDisplay">开启次数: 0</span>
     <button onclick="simulate(10)">十连</button>
     <div id="resultDisplay" class="display"></div>
@@ -54,7 +54,7 @@
     <button onclick="reset()">清零</button>
 
     <script>
-        let gold = 9500;
+        let gold = 18000;
         let totalValue = 0;
         let statistics = [0, 0, 0, 0, 0];  // 一等到五等
         let count = 0;  // 新增计数变量
@@ -116,7 +116,7 @@
         }
 
         function reset() {
-            gold = 1000;
+            gold = 18000;
             totalValue = 0;
             statistics = [0, 0, 0, 0, 0];
             count = 0;
