@@ -1,130 +1,3242 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>至尊五行符仙葫模拟器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>国良诱捕器</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Heiti SC', 'Microsoft YaHei', sans-serif;
+        }
+        
         body {
-            background-color: #f0f0f0;
+            background-color: #f8f9fa;
             color: #333;
-            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            max-width: 500px;
+            margin: 0 auto;
+            overflow: hidden;
+            background: linear-gradient(135deg, #fff3e6, #fde9f1);
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        #game-header {
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            border-bottom: 1px solid #eee;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 5;
+        }
+        
+        #game-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ff6b8b;
+            text-shadow: 1px 1px 2px rgba(255,107,139,0.2);
+        }
+        
+        #menu-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+        }
+        
+        /* Stats Bar */
+        #stats-bar {
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 0.9rem;
+            z-index: 5;
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+        }
+        
+        .stat-icon {
+            margin-right: 5px;
+            font-size: 1.2rem;
+        }
+        
+        /* Main Game Area */
+        #game-scene {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #bg-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        #character-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 80%;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        
+        #character-image {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        
+        /* Dialog Box */
+        #dialog-box {
+            position: absolute;
+            bottom: 60px; /* 预留底部操作栏的高度 */
+            left: 0;
+            width: 100%;
+            min-height: 100px;
+            max-height: 180px;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-top: 1px solid #eee;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 10;
+            overflow-y: auto;
+        }
+        
+        #character-name {
+            font-weight: bold;
+            color: #ff6b8b;
+            margin-bottom: 5px;
+        }
+        
+        #dialog-text {
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        
+        #choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .choice-button {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .choice-button:hover {
+            background-color: #f0f7ff;
+            border-color: #b8daff;
+        }
+        
+        /* Bottom Action Bar */
+        #action-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #eee;
+            z-index: 15; /* 确保在对话框之上 */
+        }
+        
+        .action-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 50px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 0.7rem;
+        }
+        
+        .action-icon {
+            font-size: 1.3rem;
+            margin-bottom: 2px;
+        }
+        
+        /* Menu Overlay */
+        #menu-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 20;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .menu-item {
+            width: 200px;
+            padding: 12px;
+            background-color: white;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        /* System Windows */
+        .system-window {
+            position: absolute;
+            top: 60px;
+            left: 5%;
+            width: 90%;
+            height: calc(100% - 120px);
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            z-index: 15;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .window-header {
+            height: 50px;
+            background-color: #ff6b8b;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+        }
+        
+        .close-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .window-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        /* Inventory Window */
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .item {
+            background-color: #f8f9fa;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .item-image {
+            width: 60px;
+            height: 60px;
+            background-color: #eee;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: #aaa;
+        }
+        
+        .item-name {
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        
+        /* Shop Window */
+        .shop-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .shop-item-details {
+            flex: 1;
+            margin-left: 10px;
+        }
+        
+        .shop-item-name {
+            font-weight: bold;
+        }
+        
+        .shop-item-description {
+            font-size: 0.8rem;
+            color: #666;
+            margin: 5px 0;
+        }
+        
+        .shop-item-price {
+            color: #ff6b8b;
+            font-weight: bold;
+        }
+        
+        .buy-button {
+            background-color: #ff6b8b;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+        
+        /* Profile Window */
+        .profile-section {
+            margin-bottom: 20px;
+        }
+        
+        .profile-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff6b8b;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .relationship-bar-container {
+            width: 100%;
+            height: 20px;
+            background-color: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .relationship-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b8b, #ff9eb5);
+            width: 30%;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* Loading Screen */
+        #loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        #loading-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff6b8b;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #ff6b8b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Modal */
+        #modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 30;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #modal-content {
+            width: 90%;
+            max-width: 400px;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        #modal-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #ff6b8b;
+        }
+        
+        #modal-text {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        #modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .modal-button {
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        #modal-cancel {
+            background-color: #f8f9fa;
+            color: #666;
+        }
+        
+        #modal-confirm {
+            background-color: #ff6b8b;
+            color: white;
+        }
+        
+        /* Achievement Notification */
+        #achievement {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            z-index: 25;
+            display: none;
+        }
+        
+        /* Thought Bubble */
+        .thought-bubble {
+            font-style: italic;
+            color: #666;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 5px 10px;
+            margin: 5px 0;
+            display: inline-block;
+        }
+        
+        /* Mini-game elements */
+        #minigame-container {
+            position: absolute;
+            top: 100px;
+            left: 5%;
+            width: 90%;
+            height: calc(100% - 260px);
+            background-color: white;
+            border-radius: 10px;
+            z-index: 16;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Special event modal */
+        #special-event {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 40;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
             text-align: center;
             padding: 20px;
         }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin: 5px;
-            cursor: pointer;
+        
+        #special-event-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ff6b8b;
         }
-        #goldDisplay {
-            color: #d4af37;
-            font-size: 24px;
+        
+        #special-event-text {
             margin-bottom: 20px;
+            line-height: 1.6;
         }
-        .display {
-            border: 1px solid #ccc;
-            background-color: #fff;
-            color: #333;
-            margin: 10px auto;
+        
+        #special-event-button {
+            background-color: #ff6b8b;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        /* Schedule Window */
+        #schedule-window {
+            position: absolute;
+            top: 60px;
+            left: 5%;
+            width: 90%;
+            height: calc(100% - 120px);
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            z-index: 15;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .schedule-day {
             padding: 10px;
-            width: 80%;
+            border-bottom: 1px solid #eee;
         }
-        .statistics, .outputValue {
+        
+        .schedule-day-header {
+            font-weight: bold;
+            color: #ff6b8b;
+            margin-bottom: 5px;
+        }
+        
+        .schedule-events {
+            margin-left: 10px;
+        }
+        
+        .schedule-event {
             display: flex;
-            justify-content: space-around;
+            margin-bottom: 5px;
         }
-        .result-item {
-            margin: 5px;
-            padding: 5px;
-            border-radius: 5px;
-            display: inline-block;
+        
+        .schedule-time {
+            width: 80px;
+            color: #666;
         }
     </style>
 </head>
 <body>
-    <h1>至尊五行符仙葫模拟器</h1>
-    <div id="goldDisplay">金币: 2000</div>
-    <button onclick="simulate(1)">开一次</button> <span id="countDisplay">开启次数: 0</span>
-    <button onclick="simulate(10)">十连</button>
-    <div id="resultDisplay" class="display"></div>
-    <div id="statisticsDisplay" class="display statistics"></div>
-    <div id="outputValueDisplay" class="display outputValue"></div>
-    <button onclick="sell()">贩卖</button>
-    <button onclick="reset()">清零</button>
+    <div id="game-container">
+        <!-- Loading Screen -->
+        <div id="loading-screen">
+            <div id="loading-title">国良诱捕器</div>
+            <div class="loading-spinner"></div>
+            <div>正在载入恋爱养成游戏...</div>
+        </div>
+        
+        <!-- Game Header -->
+        <div id="game-header">
+            <div id="game-title">国良诱捕器</div>
+            <button id="menu-button">☰</button>
+        </div>
+        
+        <!-- Stats Bar -->
+        <div id="stats-bar">
+            <div class="stat">
+                <span class="stat-icon">💰</span>
+                <span id="money">1000</span>
+            </div>
+            <div class="stat">
+                <span class="stat-icon">❤️</span>
+                <span id="affection">10</span>
+            </div>
+            <div class="stat">
+                <span class="stat-icon">😊</span>
+                <span id="mood">普通</span>
+            </div>
+            <div class="stat">
+                <span class="stat-icon">📅</span>
+                <span id="day">第1天</span>
+            </div>
+        </div>
+        
+        <!-- Main Game Scene -->
+        <div id="game-scene">
+            <img id="bg-image" src="https://pic.imgdb.cn/item/66e85ca3d9c307b7e9cdc5df.jpg" alt="背景">
+            <div id="character-container">
+                <img id="character-image" src="https://pic1.imgdb.cn/item/66e8589dd9c307b7e9c3b0b4.jpg" alt="角色">
+            </div>
+        </div>
+        
+        <!-- Dialog Box -->
+        <div id="dialog-box">
+            <div id="character-name">结城夏奈</div>
+            <div id="dialog-text">欢迎来到"国良诱捕器"！在这个游戏中，你将扮演结城夏奈，一个对大学篮球队教练李国良痴迷的女孩。你的目标是赢得他的心！</div>
+            <div id="choices-container">
+                <button class="choice-button" onclick="makeChoice(0)">开始游戏</button>
+                <button class="choice-button" onclick="showHelp()">游戏说明</button>
+            </div>
+        </div>
+        
+        <!-- Action Bar -->
+        <div id="action-bar">
+            <button class="action-button" onclick="showProfile()">
+                <span class="action-icon">👤</span>
+                个人
+            </button>
+            <button class="action-button" onclick="showInventory()">
+                <span class="action-icon">🎒</span>
+                物品
+            </button>
+            <button class="action-button" onclick="showShop()">
+                <span class="action-icon">🛍️</span>
+                商店
+            </button>
+            <button class="action-button" onclick="showMap()">
+                <span class="action-icon">🗺️</span>
+                地点
+            </button>
+            <button class="action-button" onclick="nextDay()">
+                <span class="action-icon">⏭️</span>
+                下一天
+            </button>
+        </div>
+        
+        <!-- Menu Overlay -->
+        <div id="menu-overlay">
+            <div class="menu-item" onclick="resumeGame()">继续游戏</div>
+            <div class="menu-item" onclick="saveGame()">保存游戏</div>
+            <div class="menu-item" onclick="loadGame()">读取游戏</div>
+            <div class="menu-item" onclick="showHelp()">游戏帮助</div>
+            <div class="menu-item" onclick="showSettings()">设置</div>
+        </div>
+        
+        <!-- System Windows -->
+        <!-- Profile Window -->
+        <div id="profile-window" class="system-window">
+            <div class="window-header">
+                <div>个人资料</div>
+                <button class="close-button" onclick="closeWindow('profile-window')">×</button>
+            </div>
+            <div class="window-content">
+                <div class="profile-section">
+                    <div class="profile-header">基本资料</div>
+                    <div>姓名：结城夏奈</div>
+                    <div>身份：大学二年级商学院学生</div>
+                    <div>爱好：商法研究、烹饪、摄影</div>
+                    <div>特长：商法与法务分析</div>
+                </div>
+                
+                <div class="profile-section">
+                    <div class="profile-header">个人属性</div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span>魅力</span>
+                            <span id="charm-stat">35</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>智慧</span>
+                            <span id="intel-stat">42</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>体力</span>
+                            <span id="energy-stat">38</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>烹饪</span>
+                            <span id="cooking-stat">28</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>篮球</span>
+                            <span id="basketball-stat">15</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>商法</span>
+                            <span id="law-stat">65</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-section">
+                    <div class="profile-header">关系</div>
+                    <div>李国良 (篮球教练)</div>
+                    <div class="relationship-bar-container">
+                        <div id="guoliang-relationship" class="relationship-bar" style="width:10%"></div>
+                    </div>
+                    <div>好感度：<span id="guoliang-affection">10</span>/100</div>
+                    <div>当前状态：<span id="relationship-status">陌生人</span></div>
+                </div>
+                
+                <div class="profile-section">
+                    <div class="profile-header">记忆碎片</div>
+                    <div id="memory-fragments">尚未找到任何记忆碎片...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inventory Window -->
+        <div id="inventory-window" class="system-window">
+            <div class="window-header">
+                <div>物品栏</div>
+                <button class="close-button" onclick="closeWindow('inventory-window')">×</button>
+            </div>
+            <div class="window-content">
+                <div id="items-container" class="item-grid">
+                    <!-- Items will be added here by JS -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Shop Window -->
+        <div id="shop-window" class="system-window">
+            <div class="window-header">
+                <div>商店</div>
+                <button class="close-button" onclick="closeWindow('shop-window')">×</button>
+            </div>
+            <div class="window-content">
+                <div class="shop-item">
+                    <div class="item-image">🏀</div>
+                    <div class="shop-item-details">
+                        <div class="shop-item-name">篮球</div>
+                        <div class="shop-item-description">送给李教练，对方好感度+5，特别适合初期互动。</div>
+                        <div class="shop-item-price">300 元</div>
+                    </div>
+                    <button class="buy-button" onclick="buyItem('basketball')">购买</button>
+                </div>
+                <div class="shop-item">
+                    <div class="item-image">⌚</div>
+                    <div class="shop-item-details">
+                        <div class="shop-item-name">运动手表</div>
+                        <div class="shop-item-description">送给李教练，对方好感度+10，适合关系更进一步时赠送。</div>
+                        <div class="shop-item-price">800 元</div>
+                    </div>
+                    <button class="buy-button" onclick="buyItem('sportswatch')">购买</button>
+                </div>
+                <div class="shop-item">
+                    <div class="item-image">🍪</div>
+                    <div class="shop-item-details">
+                        <div class="shop-item-name">手工饼干</div>
+                        <div class="shop-item-description">送给李教练，对方好感度+3，是表达关心的小礼物。</div>
+                        <div class="shop-item-price">100 元</div>
+                    </div>
+                    <button class="buy-button" onclick="buyItem('cookies')">购买</button>
+                </div>
+                <div class="shop-item">
+                    <div class="item-image">📖</div>
+                    <div class="shop-item-details">
+                        <div class="shop-item-name">篮球战术书</div>
+                        <div class="shop-item-description">送给李教练，对方好感度+15，展示你对他工作的理解与支持。</div>
+                        <div class="shop-item-price">1200 元</div>
+                    </div>
+                    <button class="buy-button" onclick="buyItem('tacticsbook')">购买</button>
+                </div>
+                <div class="shop-item">
+                    <div class="item-image">👚</div>
+                    <div class="shop-item-details">
+                        <div class="shop-item-name">时尚服装</div>
+                        <div class="shop-item-description">提升魅力属性+5，增加约会成功率。</div>
+                        <div class="shop-item-price">500 元</div>
+                    </div>
+                    <button class="buy-button" onclick="buyItem('fashionclothes')">购买</button>
+                </div>
+                <div class="shop-item">
+                    <div class="item-image">📚</div>
+                    <div class="shop-item-details">
+                        <div class="shop-item-name">篮球规则书</div>
+                        <div class="shop-item-description">提升篮球知识+5，让你更懂李教练的世界。</div>
+                        <div class="shop-item-price">300 元</div>
+                    </div>
+                    <button class="buy-button" onclick="buyItem('basketballbook')">购买</button>
+                </div>
+                <div class="shop-item">
+                    <div class="item-image">📝</div>
+                    <div class="shop-item-details">
+                        <div class="shop-item-name">商法笔记</div>
+                        <div class="shop-item-description">你的商法专业笔记，精美整理后可能会派上用场。</div>
+                        <div class="shop-item-price">200 元</div>
+                    </div>
+                    <button class="buy-button" onclick="buyItem('lawnotes')">购买</button>
+                </div>
+                <div class="shop-item">
+                    <div class="item-image">🍶</div>
+                    <div class="shop-item-details">
+                        <div class="shop-item-name">能量饮料</div>
+                        <div class="shop-item-description">听说李教练训练后会喝这个，也许可以借机接近他。</div>
+                        <div class="shop-item-price">50 元</div>
+                    </div>
+                    <button class="buy-button" onclick="buyItem('energydrink')">购买</button>
+                </div>
+                <div class="shop-item">
+                    <div class="item-image">🔍</div>
+                    <div class="shop-item-details">
+                        <div class="shop-item-name">校友录</div>
+                        <div class="shop-item-description">以往毕业生的资料汇总，也许能找到关于过去的线索。</div>
+                        <div class="shop-item-price">350 元</div>
+                    </div>
+                    <button class="buy-button" onclick="buyItem('alumnibook')">购买</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Map Window -->
+        <div id="map-window" class="system-window">
+            <div class="window-header">
+                <div>地点</div>
+                <button class="close-button" onclick="closeWindow('map-window')">×</button>
+            </div>
+            <div class="window-content">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="item" onclick="visitLocation('basketball_court')">
+                        <div class="item-image">🏀</div>
+                        <div class="item-name">篮球场</div>
+                    </div>
+                    <div class="item" onclick="visitLocation('library')">
+                        <div class="item-image">📚</div>
+                        <div class="item-name">图书馆</div>
+                    </div>
+                    <div class="item" onclick="visitLocation('cafe')">
+                        <div class="item-image">☕</div>
+                        <div class="item-name">咖啡厅</div>
+                    </div>
+                    <div class="item" onclick="visitLocation('park')">
+                        <div class="item-image">🌳</div>
+                        <div class="item-name">公园</div>
+                    </div>
+                    <div class="item" onclick="visitLocation('gym')">
+                        <div class="item-image">💪</div>
+                        <div class="item-name">健身房</div>
+                    </div>
+                    <div class="item" onclick="visitLocation('classroom')">
+                        <div class="item-image">🏫</div>
+                        <div class="item-name">教室</div>
+                    </div>
+                    <div class="item" onclick="visitLocation('office')">
+                        <div class="item-image">🖋️</div>
+                        <div class="item-name">教师办公室</div>
+                    </div>
+                    <div class="item" onclick="visitLocation('home')">
+                        <div class="item-image">🏠</div>
+                        <div class="item-name">公寓</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Schedule Window -->
+        <div id="schedule-window" class="system-window">
+            <div class="window-header">
+                <div>李教练的课表</div>
+                <button class="close-button" onclick="closeWindow('schedule-window')">×</button>
+            </div>
+            <div class="window-content" id="schedule-content">
+                <!-- Schedule will be populated by JS -->
+            </div>
+        </div>
+        
+        <!-- Modal -->
+        <div id="modal">
+            <div id="modal-content">
+                <div id="modal-title">提示</div>
+                <div id="modal-text">内容</div>
+                <div id="modal-buttons">
+                    <button id="modal-cancel" class="modal-button" onclick="closeModal()">取消</button>
+                    <button id="modal-confirm" class="modal-button" onclick="confirmModal()">确定</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Achievement Notification -->
+        <div id="achievement">
+            🏆 解锁成就：初次见面
+        </div>
+        
+        <!-- Special Event Overlay -->
+        <div id="special-event">
+            <div id="special-event-title">特殊事件</div>
+            <div id="special-event-text">发生了一些特别的事情...</div>
+            <button id="special-event-button" onclick="closeSpecialEvent()">继续</button>
+        </div>
+        
+        <!-- Mini-game Container -->
+        <div id="minigame-container">
+            <!-- Mini-games will be loaded here dynamically -->
+        </div>
+    </div>
 
     <script>
-        let gold = 2000;
-        let totalValue = 0;
-        let statistics = [0, 0, 0, 0, 0];  // 一等到五等
-        let count = 0;  // 新增计数变量
-        const valueMap = [84, 12.6, 2.6, 0.5, 0.1];
-        const elements = ['金符', '木符', '水符', '火符', '土符'];
-        const colors = ['red', 'blue', 'orange', 'green', 'purple'];
-        const probabilities = [
-            {prob: 5.4, quality: 5}, {prob: 6, quality: 4},
-            {prob: 4.2, quality: 3}, {prob: 3, quality: 2},
-            {prob: 1.38, quality: 1}
+        // Game state
+        let gameState = {
+            day: 1,
+            money: 1000,
+            affection: 10,
+            mood: "普通",
+            currentScene: "intro",
+            stats: {
+                charm: 35,
+                intelligence: 42,
+                energy: 38,
+                cooking: 28,
+                basketball: 15,
+                law: 65,
+                luck: 25
+            },
+            flags: {
+                metGuoliang: false,
+                firstGift: false,
+                firstDate: false,
+                discoveredHint: false,
+                basketballMatch: false,
+                memoryTrigger: false,
+                discoveredLawConnection: false,
+                helpedWithContract: false,
+                visitedCafe: false,
+                foundOldPhoto: false,
+                knowsSchedule: false,
+                taughtBasketball: false,
+                specialEncounter: false,
+                rivalAppeared: false
+            },
+            inventory: [],
+            visitedLocations: [],
+            currentLocation: "home",
+            relationshipStatus: "陌生人",
+            achievements: [],
+            memoryFragments: [],
+            guoliangSchedule: {
+                monday: [
+                    { time: "08:00-10:00", activity: "球队晨练" },
+                    { time: "13:00-15:00", activity: "个人训练" },
+                    { time: "16:00-18:00", activity: "球队训练" }
+                ],
+                tuesday: [
+                    { time: "09:00-11:00", activity: "战术研究" },
+                    { time: "15:00-17:00", activity: "球队训练" }
+                ],
+                wednesday: [
+                    { time: "08:00-10:00", activity: "球队晨练" },
+                    { time: "14:00-16:00", activity: "教练会议" }
+                ],
+                thursday: [
+                    { time: "10:00-12:00", activity: "个人训练" },
+                    { time: "15:00-17:00", activity: "球队训练" }
+                ],
+                friday: [
+                    { time: "08:00-10:00", activity: "球队晨练" },
+                    { time: "16:00-18:00", activity: "战术训练" }
+                ],
+                saturday: [
+                    { time: "09:00-12:00", activity: "比赛日" }
+                ],
+                sunday: [
+                    { time: "自由活动", activity: "休息日" }
+                ]
+            },
+            currentWeekDay: 1 // 1 = 周一，2 = 周二，以此类推
+        };
+
+        // Current modal callback
+        let modalCallback = null;
+        let specialEventCallback = null;
+
+        // DOM Elements
+        const loadingScreen = document.getElementById('loading-screen');
+        const menuOverlay = document.getElementById('menu-overlay');
+        const dialogBox = document.getElementById('dialog-box');
+        const characterName = document.getElementById('character-name');
+        const dialogText = document.getElementById('dialog-text');
+        const choicesContainer = document.getElementById('choices-container');
+        const characterImage = document.getElementById('character-image');
+        const bgImage = document.getElementById('bg-image');
+        const moneyDisplay = document.getElementById('money');
+        const affectionDisplay = document.getElementById('affection');
+        const moodDisplay = document.getElementById('mood');
+        const dayDisplay = document.getElementById('day');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalText = document.getElementById('modal-text');
+        const achievementNotification = document.getElementById('achievement');
+        const specialEvent = document.getElementById('special-event');
+        const specialEventTitle = document.getElementById('special-event-title');
+        const specialEventText = document.getElementById('special-event-text');
+
+        // Background images for locations
+        const backgrounds = {
+            home: "https://pic1.imgdb.cn/item/66e85ca3d9c307b7e9cdc5df.jpg",
+            basketball_court: "https://pic1.imgdb.cn/item/67c46c2dd0e0a243d40a2fd3.jpg",
+            library: "https://pic.imgdb.cn/item/66e6d194d9c307b7e9c131d3.png",
+            cafe: "https://pic1.imgdb.cn/item/67bc94a8d0e0a243d403bc7f.png",
+            park: "https://pic.imgdb.cn/item/66cc8f01d9c307b7e9c6d2e8.png",
+            gym: "https://pic1.imgdb.cn/item/66e8589dd9c307b7e9c3b0b4.jpg",
+            classroom: "https://pic.imgdb.cn/item/66d071cbd9c307b7e9344927.png",
+            office: "https://pic.imgdb.cn/item/66e85ca3d9c307b7e9cdc5df.jpg"
+        };
+
+        // Character images
+        const characters = {
+            natsu: "https://pic1.imgdb.cn/item/66e8589dd9c307b7e9c3b0b4.jpg",
+            guoliang: "https://pic1.imgdb.cn/item/66be21a1d9c307b7e9cc9c98.jpg",
+            professor: "https://pic1.imgdb.cn/item/66eadcbdf21886ccc0e7f787.png",
+            classmate: "https://pic1.imgdb.cn/item/66eadcbdf21886ccc0e7f762.png",
+            rival: "https://pic1.imgdb.cn/item/66d7f116d9c307b7e9a009b9.jpg"
+        };
+
+        // Items data
+        const itemsData = {
+            basketball: { name: "篮球", icon: "🏀", description: "送给李教练，对方好感度+5", price: 300, effect: { affection: 5 } },
+            sportswatch: { name: "运动手表", icon: "⌚", description: "送给李教练，对方好感度+10", price: 800, effect: { affection: 10 } },
+            cookies: { name: "手工饼干", icon: "🍪", description: "送给李教练，对方好感度+3", price: 100, effect: { affection: 3 } },
+            tacticsbook: { name: "篮球战术书", icon: "📖", description: "送给李教练，对方好感度+15", price: 1200, effect: { affection: 15 } },
+            fashionclothes: { name: "时尚服装", icon: "👚", description: "提升魅力属性+5", price: 500, effect: { charm: 5 } },
+            basketballbook: { name: "篮球规则书", icon: "📚", description: "提升篮球知识+5", price: 300, effect: { basketball: 5 } },
+            lawnotes: { name: "商法笔记", icon: "📝", description: "你精心整理的商法笔记，也许会派上用场", price: 200, effect: { law: 3 } },
+            energydrink: { name: "能量饮料", icon: "🍶", description: "李教练喜欢的饮料", price: 50, effect: { affection: 2 } },
+            alumnibook: { name: "校友录", icon: "🔍", description: "可能包含过去的线索", price: 350, effect: { } }
+        };
+        
+        // Memory fragments data
+        const memoryFragmentsData = [
+            { id: "fragment1", title: "模糊的笑容", text: "那个在樱花树下微笑的人影，为什么感觉如此熟悉？" },
+            { id: "fragment2", title: "篮球场的约定", text: "记得好像在一年级的时候，在篮球场上曾经有过一段对话..." },
+            { id: "fragment3", title: "商法课上的争论", text: "那堂商法课上，他似乎为了某个案例和教授争论得很激烈..." },
+            { id: "fragment4", title: "共同的项目", text: "好像曾经一起参与过一个学校项目？难道那时就认识他了？" },
+            { id: "fragment5", title: "医院的回忆", text: "为什么想起医院的白色走廊会让我心跳加速？" },
+            { id: "fragment6", title: "被遗忘的约定", text: "他当时说过的话是什么？'如果我成为...'，后面是什么？" },
+            { id: "fragment7", title: "合同纠纷", text: "我好像曾经帮他处理过一份合同？关于什么的？" }
         ];
 
-        function getRandomResult() {
-            let random = Math.random() * 100;
-            let cumulativeProb = 0;
-            for (let i = 0; i < probabilities.length; i++) {
-                for (let j = 0; j < elements.length; j++) {
-                    cumulativeProb += probabilities[i].prob;
-                    if (random < cumulativeProb) {
-                        const color = colors[Math.floor(Math.random() * colors.length)];
-                        return { element: elements[j], quality: probabilities[i].quality, color };
+        // Game initialization
+        // 将DOM元素获取移到window.onload内部，并使用JavaScript添加事件监听器
+        window.onload = function() {
+            // 获取DOM元素
+            const loadingScreen = document.getElementById('loading-screen');
+            const menuOverlay = document.getElementById('menu-overlay');
+            const dialogBox = document.getElementById('dialog-box');
+            const characterName = document.getElementById('character-name');
+            const dialogText = document.getElementById('dialog-text');
+            const choicesContainer = document.getElementById('choices-container');
+            const characterImage = document.getElementById('character-image');
+            const bgImage = document.getElementById('bg-image');
+            // ...其他DOM元素获取
+            
+            // 将DOM元素存储在全局对象中供其他函数访问
+            window.gameDOM = {
+                loadingScreen,
+                menuOverlay,
+                dialogBox,
+                characterName,
+                dialogText,
+                choicesContainer,
+                characterImage,
+                bgImage,
+                // ...其他DOM元素
+            };
+            
+            // 为初始界面的按钮添加事件监听器
+            const startButton = document.querySelector('#choices-container button:nth-child(1)');
+            const helpButton = document.querySelector('#choices-container button:nth-child(2)');
+            
+            if(startButton) startButton.addEventListener('click', () => makeChoice(0));
+            if(helpButton) helpButton.addEventListener('click', showHelp);
+            
+            // 模拟加载
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                startGame();
+            }, 2000);
+            
+            // Menu button event
+            document.getElementById('menu-button').addEventListener('click', toggleMenu);
+            
+            // Update initial stats display
+            updateStatsDisplay();
+            
+            // Adjust dialog box position for mobile
+            window.addEventListener('resize', adjustDialogBoxPosition);
+            adjustDialogBoxPosition();
+        };
+        
+        // Adjust dialog box position based on screen size
+        function adjustDialogBoxPosition() {
+            const actionBar = document.getElementById('action-bar');
+            if (actionBar && dialogBox) {
+                const actionBarHeight = actionBar.offsetHeight;
+                dialogBox.style.bottom = actionBarHeight + 'px';
+            }
+        }
+
+        // Scene renderer - handles different story scenes
+        function renderScene(sceneId) {
+            gameState.currentScene = sceneId;
+            
+            switch(sceneId) {
+                case "intro":
+                    characterImage.src = characters.natsu;
+                    bgImage.src = backgrounds.home;
+                    showDialog("系统", "欢迎来到国良诱捕器！在这个游戏中，你将扮演结城夏奈，一个对大学篮球队教练李国良痴迷的女孩。你的目标是赢得他的心！", [
+                        { text: "开始游戏", next: "day1_morning" },
+                        { text: "游戏说明", next: null }
+                    ]);
+                    break;
+                    
+                case "day1_morning":
+                    characterImage.src = characters.natsu;
+                    bgImage.src = backgrounds.home;
+                    showDialog("系统", "第一天，早晨。阳光透过窗帘洒在你的床上，新的一天开始了。你是结城夏奈，一名大学二年级商学院学生，专攻商法。你对同校的篮球队教练李国良有着不可言说的迷恋。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "（自言自语）李国良教练...那双专注的眼睛，那强壮的身材，还有那冷峻的表情...简直就是我的理想型！今天一定要鼓起勇气去见他！听说他每天早上都会在篮球场训练球员。", [
+                            { text: "立刻前往篮球场", next: "goto_court" },
+                            { text: "先整理一下仪容", next: "prepare_first" },
+                            { text: "查阅一些篮球知识", next: "study_basketball" }
+                        ]);
+                    }, 2000);
+                    break;
+                    
+                case "prepare_first":
+                    showDialog("结城夏奈", "虽然李教练看起来冷冰冰的，但第一印象还是很重要的！我得打扮得好看一点！", [
+                        { text: "简单梳妆打扮（+1魅力）", next: "goto_court" },
+                        { text: "精心打扮（+3魅力，但会迟到）", next: "late_arrival" }
+                    ]);
+                    break;
+                    
+                case "study_basketball":
+                    showDialog("结城夏奈", "我对篮球几乎一窍不通，至少应该了解一些基础知识再去见他吧？");
+                    setTimeout(() => {
+                        gameState.stats.basketball += 3;
+                        updateStatsDisplay();
+                        showDialog("系统", "你花了一些时间查阅篮球规则和术语。篮球知识+3");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "三秒区、中锋、挡拆、空切...天啊，这些术语好难记！不过至少有点概念了。现在该出发了！", [
+                                { text: "前往篮球场", next: "goto_court" }
+                            ]);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "goto_court":
+                    gameState.currentLocation = 'basketball_court';
+                    bgImage.src = backgrounds.basketball_court;
+                    showDialog("系统", "你来到了篮球场。球员们正在进行激烈的训练，汗水在阳光下闪烁。而在场边，站着一个高大的身影——李国良教练，他壮实的身材和冷峻的表情让人不敢轻易接近。");
+                    setTimeout(() => {
+                        renderScene("first_meeting");
+                    }, 2000);
+                    break;
+                    
+                case "late_arrival":
+                    gameState.stats.charm += 3;
+                    gameState.currentLocation = 'basketball_court';
+                    bgImage.src = backgrounds.basketball_court;
+                    showDialog("系统", "你精心打扮了一番，看起来光彩照人，但不幸的是，当你到达篮球场时，晨练已经结束了。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "啊，晚了一步...不过我看到李教练正在收拾器材，也许还有机会！", [
+                            { text: "上前打招呼", next: "first_meeting_late" },
+                            { text: "默默观察", next: "observe_silently" }
+                        ]);
+                    }, 2000);
+                    break;
+                    
+                case "first_meeting":
+                    characterImage.src = characters.guoliang;
+                    showDialog("系统", "你鼓起勇气，走向场边的李教练。近距离看他更加令人震撼——身高至少一米九，肌肉线条分明，眉宇间透着一股不怒自威的气势。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "（心想）天啊，他比我想象的还要完美...那臂膀，那身材，绝对是生孩子的好材料！不行不行，现在不是胡思乱想的时候，该说些什么呢？", [
+                            { text: "直接问好", next: "direct_greeting" },
+                            { text: "询问篮球训练", next: "ask_about_training" },
+                            { text: "装作偶遇", next: "pretend_coincidence" }
+                        ]);
+                    }, 2000);
+                    break;
+                    
+                case "first_meeting_late":
+                    characterImage.src = characters.guoliang;
+                    showDialog("李国良", "训练已经结束了。", [
+                        { text: "自我介绍", next: "introduce_self_late" },
+                        { text: "提出帮忙", next: "offer_help_late" }
+                    ]);
+                    break;
+                    
+                case "direct_greeting":
+                    showDialog("结城夏奈", "早...早上好，李教练。我是结城夏奈，二年级商学院的学生。");
+                    setTimeout(() => {
+                        showDialog("李国良", "早上好。", [
+                            { text: "表达对篮球的兴趣", next: "express_interest" },
+                            { text: "坦诚地表达对他的仰慕", next: "express_admiration" },
+                            { text: "询问教练日程", next: "ask_schedule" }
+                        ]);
+                    }, 2000);
+                    break;
+                    
+                case "ask_about_training":
+                    showDialog("结城夏奈", "李教练，我对篮球很感兴趣。能和我聊聊球队的训练方法吗？");
+                    setTimeout(() => {
+                        showDialog("李国良", "你打篮球？", [
+                            { text: "坦白不太会打", next: "admit_no_skills" },
+                            { text: "表现出强烈的学习欲望", next: "want_to_learn" },
+                            { text: "谎称自己会一点", next: "lie_about_skills" }
+                        ]);
+                    }, 2000);
+                    break;
+                    
+                case "pretend_coincidence":
+                    showDialog("结城夏奈", "啊，这不是李教练吗？真巧，我正好路过。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（投来怀疑的眼神）这么早就'路过'篮球场？", [
+                            { text: "尴尬地改口", next: "change_topic_embarrassed" },
+                            { text: "坚持谎言", next: "maintain_lie" },
+                            { text: "承认是特意来的", next: "admit_intentional_visit" }
+                        ]);
+                    }, 2000);
+                    break;
+                    
+                case "express_interest":
+                    showDialog("结城夏奈", "我很喜欢篮球，一直关注校队的比赛。你的指导让球队进步很大。虽然我自己不太会打，但一直想了解更多。");
+                    setTimeout(() => {
+                        showDialog("李国良", "对篮球感兴趣？（眼中闪过一丝意外）好现象。年轻人应该多接触体育运动。");
+                        setTimeout(() => {
+                            gameState.flags.metGuoliang = true;
+                            gameState.affection += 3;
+                            updateStatsDisplay();
+                            showDialog("系统", "李教练似乎对你的篮球兴趣有些欣赏。好感度+3");
+                            unlockAchievement("初次会面", "成功与李国良进行第一次对话");
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "express_admiration":
+                    showDialog("结城夏奈", "实际上...我一直很仰慕你。你作为教练的风格和决断力让我很敬佩。还有你的...呃...体格很出众...");
+                    setTimeout(() => {
+                        showDialog("李国良", "（眉头微皱）...谢谢。（明显有些尴尬）不过我只是做好自己的工作。");
+                        setTimeout(() => {
+                            gameState.flags.metGuoliang = true;
+                            gameState.affection += 1;
+                            updateStatsDisplay();
+                            showDialog("系统", "你的直白让李教练有些措手不及。好感度微微提升。");
+                            unlockAchievement("初次会面", "成功与李国良进行第一次对话");
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "ask_schedule":
+                    showDialog("结城夏奈", "李教练，我想了解一下球队的训练时间表。方便的话，我想来观摩学习。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（审视了你一会儿）我们周一、三、五早上有晨练，大多数下午都有训练。有特别的原因想了解？");
+                        setTimeout(() => {
+                            gameState.flags.metGuoliang = true;
+                            gameState.affection += 2;
+                            updateStatsDisplay();
+                            showDialog("系统", "李教练对你的问题有些谨慎，但还是回答了。好感度+2");
+                            unlockAchievement("初次会面", "成功与李国良进行第一次对话");
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "admit_no_skills":
+                    showDialog("结城夏奈", "老实说，我不太会打篮球。商科学生大部分时间都在研究案例分析，很少有机会接触体育活动...");
+                    setTimeout(() => {
+                        showDialog("李国良", "（略微点头）诚实很好。篮球需要时间练习，不是每个人都适合。");
+                        setTimeout(() => {
+                            showDialog("系统", "李教练似乎欣赏你的诚实。");
+                            gameState.flags.metGuoliang = true;
+                            gameState.affection += 2;
+                            updateStatsDisplay();
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "want_to_learn":
+                    showDialog("结城夏奈", "我不太会打，但我真的很想学！看到球员们在场上的配合，那种团队精神和激情真的很吸引我。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（审视地看着你）学习篮球需要时间和毅力。（停顿片刻）如果真有兴趣，可以从基本规则开始了解。");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "（心想）他没有直接拒绝我！这是个好兆头！");
+                            gameState.flags.metGuoliang = true;
+                            gameState.affection += 3;
+                            updateStatsDisplay();
+                            unlockAchievement("初次会面", "成功与李国良进行第一次对话");
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "lie_about_skills":
+                    showDialog("结城夏奈", "嗯，我会一点点。虽然水平不高，但基本规则和技巧还是懂的。");
+                    setTimeout(() => {
+                        showDialog("李国良", "是吗？（突然拿起一个篮球递给你）那示范一下基本投篮姿势。");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "（心慌）啊...这个...（你笨拙地模仿投篮动作，球完全脱离预期轨道）");
+                            setTimeout(() => {
+                                showDialog("李国良", "（面无表情）以后来球场，诚实点会更好。");
+                                setTimeout(() => {
+                                    gameState.flags.metGuoliang = true;
+                                    gameState.affection -= 2; // 撒谎导致好感度下降
+                                    updateStatsDisplay();
+                                    showDialog("系统", "李教练不喜欢你的不诚实。好感度-2");
+                                    unlockAchievement("初次会面", "成功与李国良进行第一次对话...虽然有些尴尬");
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "change_topic_embarrassed":
+                    showDialog("结城夏奈", "呃...其实...（脸红）好吧，我是特意来看球队训练的。我对篮球很感兴趣。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（微微点头）比起编故事，诚实更值得尊重。训练还有半小时结束，可以在场边观看。");
+                        setTimeout(() => {
+                            gameState.flags.metGuoliang = true;
+                            gameState.affection += 2;
+                            updateStatsDisplay();
+                            showDialog("系统", "李教练对你最终的诚实表示认可。好感度+2");
+                            unlockAchievement("初次会面", "成功与李国良进行第一次对话");
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "maintain_lie":
+                    showDialog("结城夏奈", "是啊，我经常这个时间来图书馆，所以会路过球场。今天刚好看到你在训练球队，就多看了一会儿。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（眼神中带着不信任）图书馆在校区另一边。（转身继续工作）");
+                        setTimeout(() => {
+                            gameState.flags.metGuoliang = true;
+                            gameState.affection -= 1;
+                            updateStatsDisplay();
+                            showDialog("系统", "李教练看穿了你的谎言，对你的印象不太好。好感度-1");
+                            unlockAchievement("初次会面", "与李国良的首次对话并不顺利");
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "admit_intentional_visit":
+                    showDialog("结城夏奈", "（深呼吸）其实我是特意来的...我一直很仰慕你作为教练的成就，想亲眼看看你是如何训练球队的。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（表情略微缓和）至少你够坦诚。（稍作停顿）如果对篮球感兴趣，可以留下来观摩。");
+                        setTimeout(() => {
+                            gameState.flags.metGuoliang = true;
+                            gameState.affection += 3;
+                            updateStatsDisplay();
+                            showDialog("系统", "李教练欣赏你的直接和诚实。好感度+3");
+                            unlockAchievement("初次会面", "成功与李国良进行第一次对话");
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "introduce_self_late":
+                    showDialog("结城夏奈", "李教练你好，我是结城夏奈，商学院二年级的学生。我对篮球很感兴趣，特意来看训练的，没想到来晚了...");
+                    setTimeout(() => {
+                        showDialog("李国良", "（一边整理器材）明天早上七点，准时。如果真对篮球感兴趣，守时是基本素质。");
+                        setTimeout(() => {
+                            gameState.flags.metGuoliang = true;
+                            gameState.affection += 1;
+                            updateStatsDisplay();
+                            showDialog("系统", "李教练对你迟到有些不满，但邀请你明天再来。好感度+1");
+                            unlockAchievement("初次会面", "成功与李国良进行第一次对话");
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "offer_help_late":
+                    showDialog("结城夏奈", "需要帮忙整理器材吗？我看你一个人收拾这么多东西挺辛苦的。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（抬头看了你一眼）...可以把那边的球收到推车里。");
+                        setTimeout(() => {
+                            showDialog("系统", "你帮李教练收拾了训练器材，期间他几次投来审视的目光，似乎在评估你的做事方式。");
+                            setTimeout(() => {
+                                showDialog("李国良", "谢谢帮忙。你是？");
+                                setTimeout(() => {
+                                    showDialog("结城夏奈", "我是结城夏奈，商学院二年级的学生。我对篮球很感兴趣，所以想来看看训练。");
+                                    setTimeout(() => {
+                                        showDialog("李国良", "明天早上七点，如果想看训练的话。");
+                                        setTimeout(() => {
+                                            gameState.flags.metGuoliang = true;
+                                            gameState.affection += 4;
+                                            updateStatsDisplay();
+                                            showDialog("系统", "你的主动帮忙给李教练留下了好印象。好感度+4");
+                                            unlockAchievement("初次会面", "成功与李国良进行第一次对话");
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "observe_silently":
+                    showDialog("系统", "你决定在远处默默观察李教练。他动作干练地收拾着训练器材，强壮的手臂肌肉随着动作起伏。即使是做这样简单的工作，他也透出一种不容小觑的气场。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "（心想）他连整理器材的样子都这么帅气...那专注的神情，那认真的态度...");
+                        setTimeout(() => {
+                            showDialog("系统", "突然，李教练抬头向你的方向看了一眼。你慌忙转身，假装在看其他地方。");
+                            setTimeout(() => {
+                                showDialog("系统", "你没有勇气上前打招呼，最终离开了球场。今天的相遇以失败告终。");
+                                setTimeout(() => {
+                                    gameState.mood = "失落";
+                                    updateStatsDisplay();
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "first_gift":
+                    showDialog("李国良", "（接过礼物，强壮的手指轻轻触碰礼物表面）谢谢...这个很实用。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "（心想）他收下了！虽然表情依旧冰冷，但我感觉他的眼神柔和了一些！");
+                        setTimeout(() => {
+                            showDialog("系统", "李教练收下了你的礼物，好感度提升！");
+                            setTimeout(() => {
+                                showDialog("李国良", "（略显困惑）不过，为什么送我礼物？");
+                                setTimeout(() => {
+                                    showDialog("结城夏奈", "呃...我觉得教练工作很辛苦，想表达一下敬意。而且...（脸红）我挺欣赏你的。");
+                                    setTimeout(() => {
+                                        showDialog("李国良", "（沉默片刻）...谢谢。（似乎不太习惯被人直接表达好感）我得去训练了。");
+                                        setTimeout(() => {
+                                            gameState.affection += 5;
+                                            updateStatsDisplay();
+                                        }, 1000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "cafe_encounter":
+                    characterImage.src = characters.guoliang;
+                    showDialog("系统", "正当你打算找个位置坐下时，你惊讶地发现李国良教练独自坐在角落，正在翻阅一些文件。他健壮的身躯在这样的环境中显得有些格格不入。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "（心想）天啊！李教练居然在这里！是应该打招呼还是装作没看见呢？", [
+                            { text: "主动打招呼", next: "cafe_greeting" },
+                            { text: "假装偶遇", next: "cafe_pretend_coincidence" },
+                            { text: "远远观察", next: "cafe_observe" }
+                        ]);
+                    }, 2000);
+                    break;
+                    
+                case "cafe_greeting":
+                    showDialog("结城夏奈", "李教练，你好！没想到在这里遇见你。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（抬头，略带惊讶）结城同学...（他迅速合上文件夹）");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "抱歉，打扰到你了吗？");
+                            setTimeout(() => {
+                                showDialog("李国良", "没有。只是在处理一些...工作上的事情。");
+                                setTimeout(() => {
+                                    showDialog("系统", "你注意到他合上的文件夹上写着'赞助合同纠纷'几个字。");
+                                    setTimeout(() => {
+                                        showDialog("结城夏奈", "看起来是很重要的文件。我正好是学商法的，如果有什么法律问题，也许我能提供一些建议？", [
+                                            { text: "进一步询问合同问题", next: "ask_about_contract" },
+                                            { text: "转移话题", next: "change_subject_cafe" }
+                                        ]);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "ask_about_contract":
+                    showDialog("李国良", "（惊讶地挑眉）你学商法？我以为你只是...（停顿）对篮球感兴趣。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "我的专业确实是商法。球队遇到合同问题了吗？");
+                        setTimeout(() => {
+                            showDialog("李国良", "（犹豫片刻）...是的。一个赞助商想提前终止合同，条款很复杂。学校法务部门人手不足，暂时没法处理。");
+                            setTimeout(() => {
+                                showDialog("结城夏奈", "我可以看看吗？我去年参加过商法竞赛，对体育赞助合同有一些了解。");
+                                setTimeout(() => {
+                                    showDialog("李国良", "（沉思）...你确定吗？这不是学生该负责的事情。");
+                                    setTimeout(() => {
+                                        showDialog("结城夏奈", "就当是实践经验吧。而且，能帮到球队的话，我很乐意。", [
+                                            { text: "提出专业建议", next: "offer_legal_advice" },
+                                            { text: "请他喝咖啡放松", next: "offer_coffee" }
+                                        ]);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "offer_legal_advice":
+                    if (gameState.stats.law >= 50) {
+                        showDialog("系统", "你详细阅读了合同，发现了一个对学校有利的关键条款。");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "教练，你看这条款。赞助商确实可以提前终止，但需要按比例支付剩余期限的30%作为补偿金。这是个有利条件。");
+                            setTimeout(() => {
+                                showDialog("李国良", "（眼中闪过惊讶）你说得对...我之前没注意到这点。");
+                                setTimeout(() => {
+                                    showDialog("系统", "你继续分析了合同的其他细节，提出了几个建设性的建议。李教练专注地听着，偶尔点头表示认同。");
+                                    setTimeout(() => {
+                                        showDialog("李国良", "（表情略微缓和）你的分析很专业。这对球队很有帮助，谢谢。");
+                                        setTimeout(() => {
+                                            gameState.flags.discoveredLawConnection = true;
+                                            gameState.flags.helpedWithContract = true;
+                                            gameState.affection += 10;
+                                            updateStatsDisplay();
+                                            showDialog("系统", "你成功帮助李教练解决了合同问题，让他看到了你的才华和价值。好感度大幅提升！");
+                                            unlockAchievement("法律专家", "用专业知识帮助了李教练");
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    } else {
+                        showDialog("系统", "你尝试分析合同，但由于知识有限，提出的建议不太专业。");
+                        setTimeout(() => {
+                            showDialog("李国良", "（略显失望）谢谢你的帮忙...不过我可能还是需要咨询专业人士。");
+                            setTimeout(() => {
+                                gameState.affection += 2;
+                                updateStatsDisplay();
+                                showDialog("系统", "虽然没能提供实质帮助，但李教练还是感谢你的热心。好感度小幅提升。");
+                                showDialog("结城夏奈", "（心想）看来我需要更努力地学习商法知识...");
+                            }, 2000);
+                        }, 2000);
                     }
+                    break;
+                    
+                case "offer_coffee":
+                    showDialog("结城夏奈", "现在先放松一下吧，你看起来很疲惫。让我请你喝杯咖啡，稍后再看合同？");
+                    setTimeout(() => {
+                        showDialog("李国良", "（沉默片刻）...好吧。");
+                        setTimeout(() => {
+                            showDialog("系统", "你为李教练点了一杯黑咖啡，你们有了一段轻松的交谈。谈话中，你了解到他对篮球的热爱源于青少年时期。");
+                            setTimeout(() => {
+                                showDialog("李国良", "（语气比平时柔和）以前在学校，我也是商科学生。");
+                                setTimeout(() => {
+                                    showDialog("结城夏奈", "真的吗？那为什么最后选择了篮球教练这条路？");
+                                    setTimeout(() => {
+                                        showDialog("李国良", "（目光变得深远）因为一个约定。（突然停住）抱歉，说太多了。");
+                                        setTimeout(() => {
+                                            gameState.memoryFragments.push('fragment3');
+                                            gameState.affection += 5;
+                                            updateStatsDisplay();
+                                            showDialog("系统", "李教练难得分享了自己的过去，你们之间的距离似乎拉近了。好感度+5");
+                                            showDialog("结城夏奈", "（心想）约定？和谁的约定？为什么听到这个词，我的心会不自觉地加速...");
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "change_subject_cafe":
+                    showDialog("结城夏奈", "不好意思，我不该问这么多。我只是来喝杯咖啡的。");
+                    setTimeout(() => {
+                        showDialog("李国良", "没关系。（将文件放进包里）团队最近表现不错，希望能保持下去。");
+                        setTimeout(() => {
+                            showDialog("系统", "你们聊了一些关于球队的话题，气氛还算轻松。李教练虽然表情依旧冷峻，但语气比平时和缓了一些。");
+                            setTimeout(() => {
+                                gameState.affection += 2;
+                                updateStatsDisplay();
+                                showDialog("系统", "意外的咖啡厅相遇让你和李教练关系更自然了一些。好感度+2");
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "cafe_pretend_coincidence":
+                    showDialog("系统", "你假装刚刚注意到李教练，装作惊讶的样子走向他的桌子。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "咦？李教练？真是巧啊，没想到在这里遇见你！");
+                        setTimeout(() => {
+                            showDialog("李国良", "（面无表情地抬头）结城同学...（他审视地看了你一眼，似乎在判断你的真诚度）");
+                            setTimeout(() => {
+                                showDialog("结城夏奈", "我能坐这里吗？其他地方都满了。");
+                                setTimeout(() => {
+                                    showDialog("李国良", "（环顾四周，发现还有不少空位，但还是点了点头）...可以。（将文件夹放到一边）");
+                                    setTimeout(() => {
+                                        showDialog("系统", "李教练似乎看穿了你的小心思，但并没有揭穿。你们有了一次短暂但礼貌的交谈。");
+                                        setTimeout(() => {
+                                            gameState.affection += 1;
+                                            updateStatsDisplay();
+                                            showDialog("系统", "虽然手段有些生硬，但至少增加了接触的机会。好感度略微提升。");
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "cafe_observe":
+                    showDialog("系统", "你选择在远处的位置坐下，偷偷观察李教练。他专注地阅读文件，偶尔皱眉，看起来遇到了什么困难。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "（心想）他连沉思的样子都这么迷人...那紧锁的眉头，那坚毅的侧脸...");
+                        setTimeout(() => {
+                            showDialog("系统", "突然，李教练似乎感受到了视线，朝你的方向看过来。你慌忙低头假装看手机。");
+                            setTimeout(() => {
+                                showDialog("系统", "过了一会儿，当你再次抬头时，发现李教练已经离开了咖啡厅。今天的机会错过了。");
+                                setTimeout(() => {
+                                    gameState.mood = "遗憾";
+                                    updateStatsDisplay();
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "cafe_special_encounter":
+                    gameState.flags.specialEncounter = true;
+                    characterImage.src = characters.guoliang;
+                    showDialog("系统", "正当你享用饮料时，门口传来一阵骚动。李国良教练走进咖啡厅，看起来他刚结束了训练，运动装还未换下。");
+                    setTimeout(() => {
+                        showDialog("系统", "几位女生小声议论着，显然被他强壮的身材和冷峻的气质吸引。你注意到李教练环顾四周，咖啡厅几乎已座无虚席。");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "（心跳加速）这是天赐的机会！", [
+                                { text: "邀请他共享座位", next: "invite_seat_share" },
+                                { text: "装作没看见", next: "pretend_not_seeing_cafe" },
+                                { text: "主动让座", next: "offer_seat" }
+                            ]);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "invite_seat_share":
+                    showDialog("结城夏奈", "李教练！这里有空位，如果你不介意的话，可以一起坐。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（略显惊讶）结城同学...（环顾四周，考虑了一下）谢谢。");
+                        setTimeout(() => {
+                            showDialog("系统", "李教练在你对面坐下，他身上散发着训练后的热度，近距离感受到他的气场让你有些紧张。");
+                            setTimeout(() => {
+                                showDialog("李国良", "训练后习惯喝点咖啡。你经常来这里？");
+                                setTimeout(() => {
+                                    showDialog("结城夏奈", "嗯，我喜欢这里的氛围，适合学习和放松。对了，你看起来训练很辛苦，需要什么饮料吗？我可以帮你点。", [
+                                        { text: "推荐特调咖啡", next: "recommend_special_coffee" },
+                                        { text: "询问他的偏好", next: "ask_preference" }
+                                    ]);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "recommend_special_coffee":
+                    showDialog("结城夏奈", "我个人很推荐这里的特调冰咖啡，训练后喝特别提神。要不要试试？");
+                    setTimeout(() => {
+                        showDialog("李国良", "好。（掏出钱包）");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "不用，这次算我请你的！就当是...感谢你平时对球队的辛勤付出。");
+                            setTimeout(() => {
+                                showDialog("李国良", "（犹豫片刻，最终收回钱包）...谢谢。不过下次我请回来。");
+                                setTimeout(() => {
+                                    showDialog("系统", "李教练这句'下次'让你心头一颤。你为他点了特调咖啡，回来后发现他正在看手机上的战术分析。");
+                                    setTimeout(() => {
+                                        showDialog("结城夏奈", "对了，我一直想问，是什么让你决定成为篮球教练的？你看起来...很专业。");
+                                        setTimeout(() => {
+                                            showDialog("李国良", "（沉默片刻）大学时加入篮球队，后来受伤退役，但不想离开这项运动...（停顿）还有一个约定。");
+                                            setTimeout(() => {
+                                                showDialog("结城夏奈", "约定？和谁的？");
+                                                setTimeout(() => {
+                                                    showDialog("李国良", "（神情突然变得复杂）...一个朋友。（转移话题）你呢？为什么选择商法？");
+                                                    setTimeout(() => {
+                                                        gameState.memoryFragments.push('fragment6');
+                                                        gameState.affection += 8;
+                                                        updateStatsDisplay();
+                                                        showDialog("系统", "你们有了一次深入的交谈，李教练罕见地分享了他的过去。好感度大幅提升！");
+                                                        showDialog("结城夏奈", "（心想）那个'约定'和'朋友'...为什么听到这些词，我会感到如此在意？");
+                                                    }, 2000);
+                                                }, 2000);
+                                            }, 2000);
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "ask_preference":
+                    showDialog("结城夏奈", "你平时喜欢喝什么？我去帮你点。");
+                    setTimeout(() => {
+                        showDialog("李国良", "普通黑咖啡就好，不加糖。（递给你钱）");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "不用给钱，这次我请你。（微笑）就当是谢谢你平时对学生们的耐心指导。");
+                            setTimeout(() => {
+                                showDialog("李国良", "（微微惊讶）...谢谢。");
+                                setTimeout(() => {
+                                    showDialog("系统", "你为李教练点了咖啡。当你回来时，发现他正在处理一些球队文件。");
+                                    setTimeout(() => {
+                                        showDialog("结城夏奈", "球队事务很繁忙吧？看你经常加班。");
+                                        setTimeout(() => {
+                                            showDialog("李国良", "习惯了。（稍作停顿）最近有些合同问题比较麻烦。");
+                                            setTimeout(() => {
+                                                showDialog("结城夏奈", "我学的是商法，也许能帮上忙？我在学校商法社团也担任顾问。");
+                                                setTimeout(() => {
+                                                    showDialog("李国良", "（略显惊讶）你是商法专业？以后可能真的需要请教你。学校法务部门人手不足，很多时间都耽误在这些琐事上。");
+                                                    setTimeout(() => {
+                                                        gameState.flags.discoveredLawConnection = true;
+                                                        gameState.affection += 5;
+                                                        updateStatsDisplay();
+                                                        showDialog("系统", "李教练对你的专业能力表示认可，你们找到了共同话题。好感度提升！");
+                                                    }, 2000);
+                                                }, 2000);
+                                            }, 2000);
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "pretend_not_seeing_cafe":
+                    showDialog("系统", "你装作没看见李教练，低头专注于自己的饮料和手机。");
+                    setTimeout(() => {
+                        showDialog("系统", "你偷偷抬眼观察，看到李教练环顾四周后，选择离开了咖啡厅。");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "（心想）唉，错过了一个好机会...");
+                            setTimeout(() => {
+                                gameState.mood = "遗憾";
+                                updateStatsDisplay();
+                            }, 1000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "offer_seat":
+                    showDialog("结城夏奈", "李教练！您要喝咖啡吗？我正好要走了，这个位置您可以用。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（微微点头）谢谢，不过不必为我离开。");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "我已经喝完了，真的要走。（收拾东西）不过...");
+                            setTimeout(() => {
+                                showDialog("系统", "你犹豫了一下，鼓起勇气继续说。");
+                                setTimeout(() => {
+                                    showDialog("结城夏奈", "如果您不介意，下次我们可以一起喝咖啡聊聊天。我很想多了解一下篮球和您的教练经历。");
+                                    setTimeout(() => {
+                                        showDialog("李国良", "（略显意外）...好吧。有机会的话。");
+                                        setTimeout(() => {
+                                            gameState.affection += 3;
+                                            updateStatsDisplay();
+                                            showDialog("系统", "虽然只是简短的互动，但你成功邀约了李教练，留下了好印象。好感度+3");
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "law_connection":
+                    characterImage.src = characters.guoliang;
+                    bgImage.src = backgrounds.office;
+                    showDialog("系统", "你前往教师办公室找寻资料时，偶然听到一个熟悉的声音从旁边的会议室传来。");
+                    setTimeout(() => {
+                        showDialog("李国良", "我理解合同条款的复杂性，但球队需要这笔赞助金才能参加下个月的锦标赛。");
+                        setTimeout(() => {
+                            showDialog("系统", "你轻轻靠近会议室，透过半开的门缝，看到李教练正和两位穿着正装的人交谈，看起来像是律师。");
+                            setTimeout(() => {
+                                showDialog("律师", "李教练，按照现行条款，赞助商有权在这个时间点调整赞助金额。我们能做的很有限。");
+                                setTimeout(() => {
+                                    showDialog("李国良", "（表情罕见地显露出焦虑）没有其他解决方案吗？球员们已经训练了整整一学期...");
+                                    setTimeout(() => {
+                                        showDialog("结城夏奈", "（心想）他在为球队的赞助问题发愁...这正是我能帮上忙的地方！", [
+                                            { text: "主动提供帮助", next: "offer_law_help" },
+                                            { text: "先离开，等合适时机", next: "wait_for_better_timing" }
+                                        ]);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "offer_law_help":
+                    showDialog("系统", "你鼓起勇气，轻轻敲了敲会议室的门。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "打扰了...我是商法专业的结城夏奈，偶然听到你们在讨论赞助合同问题。也许我能提供一些帮助？");
+                        setTimeout(() => {
+                            showDialog("李国良", "（惊讶）结城？这是校法务处的事情，学生不该参与。");
+                            setTimeout(() => {
+                                showDialog("结城夏奈", "我在商法研究社实习，专门研究过体育赞助合同案例。教授也经常让我协助审核一些实际合同。");
+                                setTimeout(() => {
+                                    showDialog("律师", "李教练，我们确实人手紧张...也许让这位同学看看也无妨？");
+                                    setTimeout(() => {
+                                        showDialog("李国良", "（犹豫片刻）...好吧。");
+                                        setTimeout(() => {
+                                            if (gameState.stats.law >= 55) {
+                                                renderScene("successful_contract_help");
+                                            } else {
+                                                renderScene("attempted_contract_help");
+                                            }
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "successful_contract_help":
+                    showDialog("系统", "你仔细阅读了赞助合同，发现了一个关键的漏洞。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "我找到了！根据第17条第3款，赞助商确实可以调整金额，但需要提前60天通知。而据我所知，他们的通知只提前了45天？");
+                        setTimeout(() => {
+                            showDialog("律师", "（翻阅文件，眼睛突然亮起来）你说得对！我们竟然忽略了这点！");
+                            setTimeout(() => {
+                                showDialog("李国良", "（看向你，眼神中有着惊讶和欣赏）这意味着什么？");
+                                setTimeout(() => {
+                                    showDialog("律师", "意味着他们的调整无效，必须按原定金额执行，或者重新给予60天通知期。而60天后，锦标赛已经结束了。");
+                                    setTimeout(() => {
+                                        showDialog("系统", "会议结束后，李教练单独留下你。");
+                                        setTimeout(() => {
+                                            showDialog("李国良", "你真的帮了大忙。（难得地直视你的眼睛）你的法律知识...令人印象深刻。");
+                                            setTimeout(() => {
+                                                showDialog("结城夏奈", "（脸红）谢谢！我很高兴能帮上忙。");
+                                                setTimeout(() => {
+                                                    showDialog("李国良", "（犹豫片刻）如果...你有兴趣，球队可能还需要你的帮助。球队事务有很多法律层面的问题。");
+                                                    setTimeout(() => {
+                                                        showDialog("结城夏奈", "真的吗？我太乐意了！这对我来说也是很好的实践机会！");
+                                                        setTimeout(() => {
+                                                            gameState.flags.helpedWithContract = true;
+                                                            gameState.affection += 15;
+                                                            updateStatsDisplay();
+                                                            showDialog("系统", "你成功运用专业知识帮助了李教练，他对你刮目相看。好感度大幅提升！");
+                                                            unlockAchievement("法律英雄", "成功解决了球队的合同危机");
+                                                        }, 2000);
+                                                    }, 2000);
+                                                }, 2000);
+                                            }, 2000);
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "attempted_contract_help":
+                    showDialog("系统", "你认真查看合同，但其中的专业术语和复杂条款让你感到有些吃力。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "这里的第12条似乎提到了调整金额的条件...（你努力分析着）");
+                        setTimeout(() => {
+                            showDialog("系统", "你提出了几点建议，但律师们解释这些在法律上站不住脚。会议最终没有找到解决方案。");
+                            setTimeout(() => {
+                                showDialog("李国良", "（会议结束后）谢谢你想帮忙，但这些问题比较专业。");
+                                setTimeout(() => {
+                                    showDialog("结城夏奈", "对不起，我以为我能帮上忙...（低头）");
+                                    setTimeout(() => {
+                                        showDialog("李国良", "（语气缓和）至少你尝试了。这比大多数人做的更多。");
+                                        setTimeout(() => {
+                                            gameState.affection += 3;
+                                            updateStatsDisplay();
+                                            showDialog("系统", "虽然没能解决问题，但李教练感谢你的努力和真诚。好感度小幅提升。");
+                                            showDialog("结城夏奈", "（心想）我需要更加努力学习商法知识...");
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "wait_for_better_timing":
+                    showDialog("系统", "你决定先不打扰他们的会议，默默离开了。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "（心想）现在打断可能不太合适。我应该先好好准备，找个更好的时机帮助他。");
+                        setTimeout(() => {
+                            showDialog("系统", "你离开时，隐约听到李教练沮丧的声音，显然球队面临着严峻的资金问题。");
+                            setTimeout(() => {
+                                gameState.flags.discoveredLawConnection = true;
+                                updateStatsDisplay();
+                                showDialog("系统", "你了解了李教练正在面临的困境，这可能是你展示价值的机会。");
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "contract_help_opportunity":
+                    characterImage.src = characters.guoliang;
+                    showDialog("系统", "你来到教师办公室，发现李教练独自一人坐在桌前，面前摊着一堆文件，眉头紧锁。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "李教练？有什么我能帮忙的吗？");
+                        setTimeout(() => {
+                            showDialog("李国良", "（抬头，略显疲惫）结城同学...（犹豫片刻）上次你提到你学商法？");
+                            setTimeout(() => {
+                                showDialog("结城夏奈", "是的，有法律方面的问题需要帮忙吗？");
+                                setTimeout(() => {
+                                    showDialog("李国良", "球队赞助合同出了问题。学校法务部门人手不足，这事一直拖着。（指向桌上的文件）如果你有时间...也许可以看看？");
+                                    setTimeout(() => {
+                                        showDialog("结城夏奈", "当然！我很乐意帮忙！", [
+                                            { text: "专注解决合同问题", next: "focus_on_contract" },
+                                            { text: "边工作边聊天", next: "chat_while_working" }
+                                        ]);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "focus_on_contract":
+                    if (gameState.stats.law >= 50) {
+                        showDialog("系统", "你认真研究了赞助合同，凭借扎实的法律知识，成功找出了几个有利于球队的条款和赞助商违规的证据。");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "李教练，看这里。根据这些条款，赞助商的行为构成了违约，我们有充分理由要求他们履行原协议。");
+                            setTimeout(() => {
+                                showDialog("李国良", "（目光中流露出罕见的钦佩）你确定这能行得通？");
+                                setTimeout(() => {
+                                    showDialog("结城夏奈", "我非常确定。我还整理了一份反驳函的草稿，你看看。（递给他一张纸）");
+                                    setTimeout(() => {
+                                        showDialog("李国良", "（仔细阅读后）这比学校法务给出的方案强多了。（他直视你的眼睛）谢谢你，结城。这对球队很重要。");
+                                        setTimeout(() => {
+                                            showDialog("结城夏奈", "不用谢！能帮到你...和球队，我很开心。");
+                                            setTimeout(() => {
+                                                showDialog("李国良", "（难得地露出一丝微笑）你知道吗？你让我想起了一个人。");
+                                                setTimeout(() => {
+                                                    showDialog("结城夏奈", "哦？是谁？");
+                                                    setTimeout(() => {
+                                                        showDialog("李国良", "（表情突然变得复杂）...一个老朋友。（转移话题）球队训练结束后我要去提交这份文件，你要一起来吗？");
+                                                        setTimeout(() => {
+                                                            gameState.flags.helpedWithContract = true;
+                                                            gameState.memoryFragments.push('fragment7');
+                                                            gameState.affection += 12;
+                                                            updateStatsDisplay();
+                                                            showDialog("系统", "你成功帮助李教练解决了困扰他的问题，他对你的能力和热心表示高度赞赏。好感度大幅提升！");
+                                                            unlockAchievement("法律顾问", "运用专业知识解决了球队合同危机");
+                                                        }, 2000);
+                                                    }, 2000);
+                                                }, 2000);
+                                            }, 2000);
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    } else {
+                        showDialog("系统", "你尽力研究合同，但由于知识储备有限，只能提供一些基础的建议。");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "李教练，我看了一下，这些条款确实有些复杂。不过我觉得这里有一点可以争取...");
+                            setTimeout(() => {
+                                showDialog("李国良", "（点头）这个方向是对的，但可能还需要更专业的意见。不过谢谢你的帮助，至少有了一些思路。");
+                                setTimeout(() => {
+                                    gameState.affection += 5;
+                                    updateStatsDisplay();
+                                    showDialog("系统", "虽然没能完全解决问题，但李教练感谢你的用心和付出。好感度提升！");
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }
+                    break;
+                    
+                case "chat_while_working":
+                    showDialog("系统", "你一边分析合同，一边与李教练聊天，试图更多地了解他。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "李教练，你一直都对篮球这么热爱吗？");
+                        setTimeout(() => {
+                            showDialog("李国良", "（稍作思考）大学时开始认真打球。起初只是兴趣，后来成了职业。");
+                            setTimeout(() => {
+                                showDialog("结城夏奈", "那你为什么选择做教练而不是继续作为球员呢？");
+                                setTimeout(() => {
+                                    showDialog("李国良", "（眼神微黯）受伤退役。膝盖韧带断裂，不适合继续高强度比赛。");
+                                    setTimeout(() => {
+                                        showDialog("结城夏奈", "那一定很难接受...从球员转为教练的过程顺利吗？");
+                                        setTimeout(() => {
+                                            showDialog("李国良", "（难得地展开话题）一开始很困难。球员和教练是两种思维方式。（顿了顿）不过有人鼓励我走这条路。");
+                                            setTimeout(() => {
+                                                showDialog("结城夏奈", "哦？是谁啊？");
+                                                setTimeout(() => {
+                                                    showDialog("李国良", "（表情变得复杂）一个...特别的人。（突然转回工作）这份合同你看得怎么样了？");
+                                                    setTimeout(() => {
+                                                        if (gameState.stats.law >= 45) {
+                                                            showDialog("结城夏奈", "我找到了几个对我们有利的条款！你看这里...");
+                                                            setTimeout(() => {
+                                                                showDialog("系统", "你成功找到了解决方案，同时也让李教练敞开心扉分享了一些个人故事。");
+                                                                setTimeout(() => {
+                                                                    gameState.flags.helpedWithContract = true;
+                                                                    gameState.memoryFragments.push('fragment4');
+                                                                    gameState.affection += 10;
+                                                                    updateStatsDisplay();
+                                                                    showDialog("系统", "你不仅帮助解决了问题，还与李教练建立了更深层次的连接。好感度大幅提升！");
+                                                                    unlockAchievement("敞开心扉", "让李教练分享了他的故事");
+                                                                }, 2000);
+                                                            }, 2000);
+                                                        } else {
+                                                            showDialog("结城夏奈", "我还在研究...这些条款比我想象的更复杂。");
+                                                            setTimeout(() => {
+                                                                showDialog("李国良", "没关系，能帮忙看就已经很感谢了。");
+                                                                setTimeout(() => {
+                                                                    gameState.memoryFragments.push('fragment4');
+                                                                    gameState.affection += 6;
+                                                                    updateStatsDisplay();
+                                                                    showDialog("系统", "虽然没能完全解决合同问题，但你与李教练的交流拉近了距离。好感度提升！");
+                                                                }, 2000);
+                                                            }, 2000);
+                                                        }
+                                                    }, 2000);
+                                                }, 2000);
+                                            }, 2000);
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "discover_schedule":
+                    characterImage.src = characters.guoliang;
+                    showDialog("系统", "你来到教师办公区，发现李教练的办公室门开着，但里面没人。办公桌上放着一份周训练计划表。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "（心想）这是李教练的训练安排表！我可以看看他平时的行程安排...", [
+                            { text: "偷看训练安排表", next: "peek_schedule" },
+                            { text: "礼貌等待", next: "wait_politely" }
+                        ]);
+                    }, 2000);
+                    break;
+                    
+                case "peek_schedule":
+                    showDialog("系统", "你左右张望，确认没人注意，然后快速浏览李教练的训练安排表。");
+                    setTimeout(() => {
+                        showDialog("系统", "表格详细记录了李教练每周的训练时间、地点和内容，这对你计划偶遇他非常有帮助。");
+                        setTimeout(() => {
+                            showDialog("李国良", "（突然出现在门口）在找什么？");
+                            setTimeout(() => {
+                                showDialog("结城夏奈", "啊！李教练！我...我是来问一下...", [
+                                    { text: "坦白承认", next: "admit_peeking" },
+                                    { text: "编个理由", next: "make_excuse" }
+                                ]);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "admit_peeking":
+                    showDialog("结城夏奈", "（深呼吸）对不起，我看到训练安排表，有点好奇。我不应该未经允许就看您的文件。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（严肃地看着你）至少你坦诚。（走到桌前）有什么特别想知道的吗？");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "我只是想了解球队的训练安排...可能的话，想来观摩学习。");
+                            setTimeout(() => {
+                                showDialog("李国良", "（考虑片刻）如果真对篮球感兴趣，没必要偷看。（拿起安排表）这是公开信息，想了解可以直接问我。");
+                                setTimeout(() => {
+                                    showDialog("结城夏奈", "对不起，我以后会直接询问的。");
+                                    setTimeout(() => {
+                                        showDialog("李国良", "（语气缓和）训练时间在表格上，如果想观摩，提前告诉我一声。");
+                                        setTimeout(() => {
+                                            gameState.flags.knowsSchedule = true;
+                                            gameState.affection += 1; // 诚实获得一点好感，但偷看导致印象不佳
+                                            updateStatsDisplay();
+                                            showDialog("系统", "你的坦诚挽回了一些印象，李教练允许你了解他的训练安排。");
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "make_excuse":
+                    showDialog("结城夏奈", "李教练！我是来问关于篮球社团的事情。正好看到您的办公室门开着，就想等您一下。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（怀疑地看着你和桌上的安排表）是吗？看起来你对我的训练安排很感兴趣。");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "呃...我只是不小心看到了。真的只是来问社团的事情。");
+                            setTimeout(() => {
+                                showDialog("李国良", "（不置可否）篮球社团的事找社长，不是找我。（走到桌前）下次有事，敲门等回应再进来。");
+                                setTimeout(() => {
+                                    gameState.affection -= 3; // 撒谎导致好感度下降
+                                    updateStatsDisplay();
+                                    showDialog("系统", "李教练似乎看穿了你的谎言，对你的印象变差了。好感度-3");
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "wait_politely":
+                    showDialog("系统", "你决定在门外等待李教练回来，不去翻看他的私人物品。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（几分钟后回到办公室）结城同学？有事找我？");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "是的，李教练。我想了解一下球队的训练安排，如果可以的话，想来观摩学习。");
+                            setTimeout(() => {
+                                showDialog("李国良", "（略显意外）对篮球感兴趣？（走到桌前拿起安排表）这是训练时间表，你可以看看。有兴趣的话，随时可以来。");
+                                setTimeout(() => {
+                                    showDialog("结城夏奈", "真的吗？太感谢了！我一定会好好学习的！");
+                                    setTimeout(() => {
+                                        showDialog("李国良", "（难得地微微点头）态度不错。学习任何东西都需要耐心和尊重。");
+                                        setTimeout(() => {
+                                            gameState.flags.knowsSchedule = true;
+                                            gameState.affection += 5;
+                                            updateStatsDisplay();
+                                            showDialog("系统", "你的礼貌和真诚打动了李教练，他主动分享了训练安排。好感度+5");
+                                            unlockAchievement("诚信之心", "用礼貌赢得了尊重");
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "basketball_lesson":
+                    characterImage.src = characters.guoliang;
+                    gameState.flags.taughtBasketball = true;
+                    showDialog("系统", "你来到篮球场，发现训练刚刚结束，只有李教练一人还在场上投篮。他的每个动作都充满力量和精准，看起来异常帅气。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "（心想）天啊，他连投篮的样子都这么迷人...");
+                        setTimeout(() => {
+                            showDialog("李国良", "（注意到你）结城？有事？");
+                            setTimeout(() => {
+                                showDialog("结城夏奈", "我...我想学习一下基本的篮球技巧。一直看您训练球队，自己也想试试。", [
+                                    { text: "请求基本指导", next: "ask_basic_guidance" },
+                                    { text: "承认完全不懂", next: "admit_ignorance" }
+                                ]);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "ask_basic_guidance":
+                    showDialog("结城夏奈", "能教我一些基础的投篮姿势吗？我想亲自体验一下篮球的乐趣。");
+                    setTimeout(() => {
+                        showDialog("李国良", "（考虑片刻）...好。（拿起球递给你）先感受一下球的重量和手感。");
+                        setTimeout(() => {
+                            showDialog("系统", "你接过球，感受它的纹理和重量。李教练站在你身旁，开始耐心讲解。");
+                            setTimeout(() => {
+                                showDialog("李国良", "双脚与肩同宽，持球的手掌要有空隙，不要贴着球面...");
+                                setTimeout(() => {
+                                    showDialog("系统", "你按照指导做出动作，但第一次尝试时球完全偏离了篮筐。");
+                                    setTimeout(() => {
+                                        showDialog("李国良", "手腕发力不够。（走近你）手臂要这样。");
+                                        setTimeout(() => {
+                                            showDialog("系统", "李教练站到你身后，健壮的手臂轻轻扶着你的手肘，帮你调整姿势。他的体温和气息近在咫尺，让你心跳加速。");
+                                            setTimeout(() => {
+                                                showDialog("结城夏奈", "（脸红）这...这样吗？");
+                                                setTimeout(() => {
+                                                    showDialog("李国良", "对，然后手腕向前一推。（他的手轻轻引导你的动作）");
+                                                    setTimeout(() => {
+                                                        showDialog("系统", "在李教练的引导下，你的球终于投进了篮筐。");
+                                                        setTimeout(() => {
+                                                            showDialog("结城夏奈", "进了！太神奇了！");
+                                                            setTimeout(() => {
+                                                                showDialog("李国良", "（罕见地微笑）不错的进步。篮球需要耐心和持续练习。");
+                                                                setTimeout(() => {
+                                                                    gameState.stats.basketball += 5;
+                                                                    gameState.affection += 8;
+                                                                    updateStatsDisplay();
+                                                                    showDialog("系统", "李教练亲自教你打篮球，你们之间的距离拉近了。篮球技能+5，好感度+8");
+                                                                    unlockAchievement("初学篮球", "接受了李教练的私人指导");
+                                                                }, 2000);
+                                                            }, 2000);
+                                                        }, 2000);
+                                                    }, 2000);
+                                                }, 2000);
+                                            }, 2000);
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "admit_ignorance":
+                    showDialog("结城夏奈", "老实说，我对篮球一窍不通，连怎么正确持球都不太清楚。但我真的很想学！");
+                    setTimeout(() => {
+                        showDialog("李国良", "（表情缓和）承认无知是学习的第一步。（拿起球）来，试试基本持球姿势。");
+                        setTimeout(() => {
+                            showDialog("系统", "李教练带着难得的耐心，从最基础的握球方式开始教你。他的声音虽然依旧低沉，但语气柔和了许多。");
+                            setTimeout(() => {
+                                showDialog("李国良", "手指张开，不要用掌心接触球面。（他的大手轻轻调整你的手指位置）");
+                                setTimeout(() => {
+                                    showDialog("系统", "李教练的手触碰到你的手指，那粗糙而温暖的触感让你心跳漏了一拍。");
+                                    setTimeout(() => {
+                                        showDialog("结城夏奈", "（紧张地）这...这样对吗？");
+                                        setTimeout(() => {
+                                            showDialog("李国良", "对，然后试着投球。肘部伸直，手腕发力。");
+                                            setTimeout(() => {
+                                                showDialog("系统", "你试着投球，虽然没进，但至少方向对了。李教练继续耐心指导，直到你终于投进一球。");
+                                                setTimeout(() => {
+                                                    showDialog("结城夏奈", "我投进了！（激动地跳起来）谢谢你的指导，李教练！");
+                                                    setTimeout(() => {
+                                                        showDialog("李国良", "（微微点头）天分不错。（顿了顿）我刚开始打球时，也有人这样教我。");
+                                                        setTimeout(() => {
+                                                            showDialog("结城夏奈", "是谁啊？你的教练吗？");
+                                                            setTimeout(() => {
+                                                                showDialog("李国良", "（表情一瞬间复杂）...一个重要的人。（转移话题）继续练习吧，基础很重要。");
+                                                                setTimeout(() => {
+                                                                    gameState.stats.basketball += 5;
+                                                                    gameState.affection += 10;
+                                                                    gameState.memoryFragments.push('fragment2');
+                                                                    updateStatsDisplay();
+                                                                    showDialog("系统", "李教练不仅教你打篮球，还分享了他的一段回忆。你们的关系明显更亲近了。篮球技能+5，好感度+10");
+                                                                    unlockAchievement("特别的学生", "让李教练回忆起特别的过去");
+                                                                }, 2000);
+                                                            }, 2000);
+                                                        }, 2000);
+                                                    }, 2000);
+                                                }, 2000);
+                                            }, 2000);
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "office_law_help":
+                    showDialog("李国良", "（接过你的笔记，认真翻阅）这些...很专业。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "我整理了几个体育赞助合同常见的法律陷阱和解决方案。如果您面临合同问题，希望能有所帮助。");
+                        setTimeout(() => {
+                            showDialog("李国良", "（抬头看你，目光中有着罕见的赞赏）确实有帮助。球队正好遇到一些赞助问题。");
+                            setTimeout(() => {
+                                showDialog("结城夏奈", "如果需要更具体的帮助，我随时可以提供支持。我在商法课上成绩一直很好，也参加过几次商法竞赛。");
+                                setTimeout(() => {
+                                    showDialog("李国良", "（沉思片刻）其实...有一份合同我正在烦恼。（从抽屉里拿出文件）你愿意看看吗？");
+                                    setTimeout(() => {
+                                        showDialog("系统", "你和李教练一起研究合同，你的专业知识给他留下了深刻印象。讨论中，你们的距离似乎比以往任何时候都近。");
+                                        setTimeout(() => {
+                                            if (gameState.stats.law >= 55) {
+                                                showDialog("李国良", "（惊讶）你找到了解决方案...学校法务部门都没注意到这一点。");
+                                                setTimeout(() => {
+                                                    showDialog("结城夏奈", "（微笑）有时候多一双眼睛看问题会有不同发现。");
+                                                    setTimeout(() => {
+                                                        showDialog("李国良", "（难得地直视你）结城同学，你不仅仅是个学生...你有真才实学。（顿了顿）这让我想起了一个人。");
+                                                        setTimeout(() => {
+                                                            showDialog("结城夏奈", "（好奇）是谁啊？");
+                                                            setTimeout(() => {
+                                                                showDialog("李国良", "（表情变得复杂）...一段往事了。（转移话题）谢谢你的帮助，这对球队很重要。");
+                                                                setTimeout(() => {
+                                                                    gameState.flags.helpedWithContract = true;
+                                                                    gameState.memoryFragments.push('fragment7');
+                                                                    gameState.affection += 15;
+                                                                    updateStatsDisplay();
+                                                                    showDialog("系统", "你成功运用专业知识帮助李教练解决了难题，他对你刮目相看。好感度大幅提升！");
+                                                                    unlockAchievement("法律智者", "用专业知识解决了棘手问题");
+                                                                }, 2000);
+                                                            }, 2000);
+                                                        }, 2000);
+                                                    }, 2000);
+                                                }, 2000);
+                                            } else {
+                                                showDialog("李国良", "谢谢你的建议。虽然问题还需要进一步处理，但你的分析给了我新思路。");
+                                                setTimeout(() => {
+                                                    gameState.affection += 7;
+                                                    updateStatsDisplay();
+                                                    showDialog("系统", "虽然没能完全解决问题，但你的专业态度和热心帮助让李教练印象深刻。好感度提升！");
+                                                }, 2000);
+                                            }
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "law_help_offer":
+                    showDialog("李国良", "（惊讶）你说什么？");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "我注意到您刚才看的文件是关于合同的。我恰好是商法专业的学生，如果球队遇到法律问题，也许我能帮上忙？");
+                        setTimeout(() => {
+                            showDialog("李国良", "（沉思片刻）确实有一些赞助合同的麻烦...");
+                            setTimeout(() => {
+                                showDialog("结城夏奈", "我参加过商法竞赛，对体育赞助合同也有研究。至少可以提供一些初步建议？");
+                                setTimeout(() => {
+                                    showDialog("李国良", "（犹豫）这是学校的正式事务，学生参与不太合适...");
+                                    setTimeout(() => {
+                                        showDialog("结城夏奈", "就当是我的实践学习？我可以先看看，如果能帮上忙最好，不行的话也不会有损失。");
+                                        setTimeout(() => {
+                                            showDialog("李国良", "...好吧。（从包里拿出文件夹）下周二下午三点，办公室。如果你真有兴趣帮忙的话。");
+                                            setTimeout(() => {
+                                                gameState.flags.discoveredLawConnection = true;
+                                                gameState.affection += 5;
+                                                updateStatsDisplay();
+                                                showDialog("系统", "你主动展示了自己的专业价值，李教练对你另眼相看。好感度+5");
+                                                unlockAchievement("专业展示", "展示了自己的法律专长");
+                                            }, 2000);
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "rival_introduction":
+                    characterImage.src = characters.rival;
+                    bgImage.src = backgrounds.cafe;
+                    showDialog("系统", "你在咖啡厅学习时，听到邻桌几个女生在热烈讨论着什么。");
+                    setTimeout(() => {
+                        showDialog("女生A", "你们听说了吗？体育系的相泽学姐最近一直在接近李教练！");
+                        setTimeout(() => {
+                            showDialog("女生B", "真的假的？那个校花级人物？她不是有很多追求者吗，怎么会对李教练感兴趣？");
+                            setTimeout(() => {
+                                showDialog("女生C", "听说她负责的学生会体育部最近要和篮球队合作，借机会经常找李教练'讨论工作'呢！");
+                                setTimeout(() => {
+                                    showDialog("系统", "你不由自主地竖起耳朵，心里涌起一股莫名的不安。");
+                                    setTimeout(() => {
+                                        showDialog("女生A", "而且据说相泽学姐不仅人美，还是运动健将，国中时还是篮球校队的！这下李教练肯定会被吸引吧？");
+                                        setTimeout(() => {
+                                            showDialog("结城夏奈", "（心想）相泽...？这个名字怎么有点熟悉？", [
+                                                { text: "继续偷听", next: "continue_eavesdropping" },
+                                                { text: "主动打听", next: "ask_about_rival" }
+                                            ]);
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "continue_eavesdropping":
+                    showDialog("系统", "你假装看书，实际上全神贯注地听着邻桌的谈话。");
+                    setTimeout(() => {
+                        showDialog("女生B", "不过李教练不是出了名的冷漠吗？听说很多女生都被他冰山脸拒绝过。");
+                        setTimeout(() => {
+                            showDialog("女生C", "但相泽学姐和他是同届校友啊！据说以前就认识，有共同话题。");
+                            setTimeout(() => {
+                                showDialog("女生A", "而且我前几天亲眼看到他们一起吃饭！李教练居然还微笑了！");
+                                setTimeout(() => {
+                                    showDialog("系统", "听到这里，你感到一阵莫名的酸楚和不安。");
+                                    setTimeout(() => {
+                                        showDialog("结城夏奈", "（心想）同届校友？难道...他们有过去的联系？这种感觉是...嫉妒吗？");
+                                        setTimeout(() => {
+                                            gameState.flags.rivalAppeared = true;
+                                            gameState.mood = "担忧";
+                                            updateStatsDisplay();
+                                            showDialog("系统", "你得知了潜在的'情敌'存在，这让你感到一丝危机感。也许你应该更积极主动地接近李教练？");
+                                            unlockAchievement("危机感", "发现了潜在的情敌");
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "ask_about_rival":
+                    showDialog("结城夏奈", "不好意思，我无意中听到你们提到相泽学姐和李教练...她是谁呢？");
+                    setTimeout(() => {
+                        showDialog("女生A", "（惊讶地看着你）啊，你是对李教练有兴趣吗？");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "不，我只是...（脸红）在篮球队帮忙，所以有点好奇。");
+                            setTimeout(() => {
+                                showDialog("女生C", "相泽美咲，大四体育系的学姐，学生会体育部部长。又美又强，是校园名人呢！");
+                                setTimeout(() => {
+                                    showDialog("女生B", "她和李教练好像是同届同学，据说关系不一般哦！最近经常看到他们一起吃饭讨论事情。");
+                                    setTimeout(() => {
+                                        showDialog("系统", "听着女生们的描述，你脑海中浮现出一个光芒万丈的完美学姐形象，与之相比，自己仿佛黯然失色。");
+                                        setTimeout(() => {
+                                            showDialog("结城夏奈", "谢谢告诉我。（强挤出微笑）");
+                                            setTimeout(() => {
+                                                showDialog("女生A", "（意味深长地笑）如果你也喜欢李教练，可要加油哦！听说相泽学姐最近动作很积极呢！");
+                                                setTimeout(() => {
+                                                    gameState.flags.rivalAppeared = true;
+                                                    gameState.mood = "不安";
+                                                    updateStatsDisplay();
+                                                    showDialog("系统", "你得知了强大的竞争对手存在，这让你感到压力和不安。也许你需要展示自己独特的一面，才能吸引李教练的注意？");
+                                                    unlockAchievement("情敌出现", "了解到了潜在的竞争对手");
+                                                }, 2000);
+                                            }, 2000);
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "memory_dream":
+                    bgImage.src = backgrounds.park;
+                    showDialog("系统", "你做了一个奇怪的梦。梦中，你站在樱花盛开的校园里，周围的一切都模糊不清，唯有面前的那个人影异常清晰。");
+                    setTimeout(() => {
+                        showDialog("???", "结城，如果我成为教练，你就...")
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "（梦中）什么？你说什么？（你努力去听，但声音却越来越远）");
+                            setTimeout(() => {
+                                showDialog("系统", "梦中人影的脸始终模糊不清，但那身形、那声音，却让你感到无比熟悉...");
+                                setTimeout(() => {
+                                    showDialog("结城夏奈", "（惊醒）那个人是...李教练？不，那时他还不是教练...那是什么时候？为什么我会梦到这个？");
+                                    setTimeout(() => {
+                                        if (!gameState.memoryFragments.includes('fragment5')) {
+                                            gameState.memoryFragments.push('fragment5');
+                                        }
+                                        updateStatsDisplay();
+                                        showDialog("系统", "这个梦让你感到困惑又心跳加速。你和李教练的过去，似乎比你记忆中的要复杂得多...");
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+                    
+                case "memory_trigger":
+                    bgImage.src = backgrounds.home;
+                    showDialog("系统", "夜晚，你躺在床上，翻来覆去无法入睡。过去几周与李教练的互动在脑海中不断浮现，还有那些奇怪的梦境碎片...");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "（自言自语）为什么我总觉得与他之间有什么被遗忘的联系？那些梦，那些熟悉的感觉...");
+                        setTimeout(() => {
+                            showDialog("系统", "突然，一阵剧烈的头痛袭来，你抱住头，眼前闪过无数模糊的画面。");
+                            setTimeout(() => {
+                                bgImage.src = backgrounds.park;
+                                showDialog("系统", "樱花树下，你和一个高大的身影并肩而立...");
+                                setTimeout(() => {
+                                    showDialog("系统", "图书馆里，你们俯首研读同一本商法教材，激烈讨论着某个案例...");
+                                    setTimeout(() => {
+                                        showDialog("系统", "篮球场边，你为他的精彩表现欢呼，他向你投来微笑...");
+                                        setTimeout(() => {
+                                            showDialog("系统", "医院走廊，你泪流满面地握着他的手，他躺在病床上，膝盖缠着厚厚的绷带...");
+                                            setTimeout(() => {
+                                                bgImage.src = backgrounds.home;
+                                                showDialog("结城夏奈", "（震惊地捂住嘴）天啊...我想起来了！李国良...他不仅仅是我憧憬的教练...他是我大一时的同班同学！");
+                                                setTimeout(() => {
+                                                    showDialog("系统", "记忆如潮水般涌来，你终于明白了那种熟悉感的来源。你和李国良曾经是非常亲密的朋友，甚至可能更多...");
+                                                    setTimeout(() => {
+                                                        showDialog("结城夏奈", "但为什么我会忘记这么重要的事？又为什么他装作不认识我？");
+                                                        setTimeout(() => {
+                                                            showDialog("系统", "你急切地翻出手机，查看大一时的照片。在一张班级合影中，你终于找到了证据——年轻的李国良站在你身旁，你们相视而笑。");
+                                                            setTimeout(() => {
+                                                                showDialog("结城夏奈", "（难以置信）一定发生了什么...我必须去问清楚！");
+                                                                setTimeout(() => {
+                                                                    gameState.flags.memoryTrigger = true;
+                                                                    updateStatsDisplay();
+                                                                    showDialog("系统", "重大剧情转折！你终于想起了被遗忘的过去，但这只是谜团的开始...");
+                                                                    unlockAchievement("记忆觉醒", "揭开了被遗忘的真相");
+                                                                    
+                                                                    // 此处可以继续添加寻找真相的剧情分支
+                                                                }, 2000);
+                                                            }, 2000);
+                                                        }, 2000);
+                                                    }, 2000);
+                                                }, 2000);
+                                            }, 2000);
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                    break;
+    
+                    // 可以在此继续添加更多剧情分支场景
+                    
+                    default:
+                        showDialog("系统", "继续游戏...");
+                    }
+        }
+        
+        // Start the game
+        function startGame() {
+            renderScene("intro");
+        }
+
+        // Update stats display
+        function updateStatsDisplay() {
+            moneyDisplay.textContent = gameState.money;
+            affectionDisplay.textContent = gameState.affection;
+            moodDisplay.textContent = gameState.mood;
+            dayDisplay.textContent = `第${gameState.day}天`;
+            
+            // Update profile window stats if open
+            if (document.getElementById('profile-window').style.display === 'flex') {
+                document.getElementById('charm-stat').textContent = gameState.stats.charm;
+                document.getElementById('intel-stat').textContent = gameState.stats.intelligence;
+                document.getElementById('energy-stat').textContent = gameState.stats.energy;
+                document.getElementById('cooking-stat').textContent = gameState.stats.cooking;
+                document.getElementById('basketball-stat').textContent = gameState.stats.basketball;
+                document.getElementById('law-stat').textContent = gameState.stats.law;
+                
+                document.getElementById('guoliang-affection').textContent = gameState.affection;
+                document.getElementById('guoliang-relationship').style.width = `${gameState.affection}%`;
+                document.getElementById('relationship-status').textContent = gameState.relationshipStatus;
+                
+                // Update memory fragments
+                if (gameState.memoryFragments.length > 0) {
+                    let fragmentsHTML = '';
+                    gameState.memoryFragments.forEach(fragmentId => {
+                        const fragment = memoryFragmentsData.find(f => f.id === fragmentId);
+                        if (fragment) {
+                            fragmentsHTML += `<div style="margin-bottom: 10px;">
+                                <div style="font-weight: bold;">${fragment.title}</div>
+                                <div style="color: #666; font-style: italic;">${fragment.text}</div>
+                            </div>`;
+                        }
+                    });
+                    document.getElementById('memory-fragments').innerHTML = fragmentsHTML;
+                } else {
+                    document.getElementById('memory-fragments').innerHTML = '尚未找到任何记忆碎片...';
                 }
             }
         }
 
-        function simulate(times) {
-            if (gold < 9.5 * times) {
-                alert("金币不足！");
+        // Toggle menu overlay
+        function toggleMenu() {
+            menuOverlay.style.display = menuOverlay.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        // Resume game
+        function resumeGame() {
+            menuOverlay.style.display = 'none';
+        }
+
+        // Save game
+        function saveGame() {
+            localStorage.setItem('guoliangTrapSave', JSON.stringify(gameState));
+            showModal('保存成功', '游戏已保存');
+        }
+
+        // Load game
+        function loadGame() {
+            const savedGame = localStorage.getItem('guoliangTrapSave');
+            if (savedGame) {
+                gameState = JSON.parse(savedGame);
+                updateStatsDisplay();
+                renderScene(gameState.currentScene);
+                menuOverlay.style.display = 'none';
+                showModal('读取成功', '游戏已读取');
+            } else {
+                showModal('无存档', '没有找到游戏存档');
+            }
+        }
+
+        // Show help
+        function showHelp() {
+            menuOverlay.style.display = 'none';
+            showModal('游戏说明', 
+                '《国良诱捕器》是一款恋爱养成游戏，你扮演结城夏奈，目标是赢得篮球教练李国良的心。\n\n' +
+                '游戏系统：\n' +
+                '- 好感度：通过互动、送礼提升李教练对你的好感\n' +
+                '- 属性：提升自己的各项能力以解锁更多剧情\n' +
+                '- 金钱：完成事件和工作获得金钱\n' +
+                '- 地点：访问不同地点触发不同事件\n' +
+                '- 记忆碎片：收集被遗忘的回忆，解开隐藏真相\n\n' +
+                '角色设定：\n' +
+                '- 结城夏奈：商学院学生，精通商法，但对篮球知识有限\n' +
+                '- 李国良：冷峻的篮球教练，严厉中带着神秘感\n\n' +
+                '秘密提示：这个故事中隐藏着意想不到的反转...\n' +
+                '每次选择都会影响剧情走向和角色关系发展！'
+            );
+        }
+
+        // Show settings
+        function showSettings() {
+            menuOverlay.style.display = 'none';
+            showModal('设置', '游戏设置功能开发中...');
+        }
+
+        // Show profile window
+        function showProfile() {
+            document.getElementById('profile-window').style.display = 'flex';
+            updateStatsDisplay();
+        }
+
+        // Show inventory window
+        function showInventory() {
+            const inventoryWindow = document.getElementById('inventory-window');
+            const itemsContainer = document.getElementById('items-container');
+            
+            // Clear previous items
+            itemsContainer.innerHTML = '';
+            
+            // Add items from inventory
+            if (gameState.inventory.length === 0) {
+                itemsContainer.innerHTML = '<div style="grid-column: span 3; text-align: center; padding: 20px;">物品栏为空</div>';
+            } else {
+                gameState.inventory.forEach(itemId => {
+                    const item = itemsData[itemId];
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'item';
+                    itemElement.onclick = () => useItem(itemId);
+                    
+                    itemElement.innerHTML = `
+                        <div class="item-image">${item.icon}</div>
+                        <div class="item-name">${item.name}</div>
+                    `;
+                    
+                    itemsContainer.appendChild(itemElement);
+                });
+            }
+            
+            inventoryWindow.style.display = 'flex';
+        }
+
+        // Show shop window
+        function showShop() {
+            document.getElementById('shop-window').style.display = 'flex';
+        }
+
+        // Show map window
+        function showMap() {
+            document.getElementById('map-window').style.display = 'flex';
+        }
+        
+        // Show schedule window
+        function showSchedule() {
+            const scheduleWindow = document.getElementById('schedule-window');
+            const scheduleContent = document.getElementById('schedule-content');
+            
+            // Clear previous content
+            scheduleContent.innerHTML = '';
+            
+            // Add schedule data
+            const weekDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            const dayNames = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+            
+            weekDays.forEach((day, index) => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'schedule-day';
+                
+                let dayHTML = `<div class="schedule-day-header">${dayNames[index]}</div>`;
+                dayHTML += '<div class="schedule-events">';
+                
+                gameState.guoliangSchedule[day].forEach(event => {
+                    dayHTML += `<div class="schedule-event">
+                        <div class="schedule-time">${event.time}</div>
+                        <div>${event.activity}</div>
+                    </div>`;
+                });
+                
+                dayHTML += '</div>';
+                dayElement.innerHTML = dayHTML;
+                scheduleContent.appendChild(dayElement);
+            });
+            
+            scheduleWindow.style.display = 'flex';
+        }
+
+        // Close system window
+        function closeWindow(windowId) {
+            document.getElementById(windowId).style.display = 'none';
+        }
+
+        // Advance to next day
+        function nextDay() {
+            if (gameState.day === 1 && !gameState.flags.metGuoliang) {
+                showModal('提示', '第一天结束前，你应该去篮球场见见李教练。');
                 return;
             }
-            gold -= 9.5 * times;
-            count += times;  // 更新计数
-            let results = [];
-            for (let i = 0; i < times; i++) {
-                const result = getRandomResult();
-                totalValue += valueMap[result.quality - 1];
-                statistics[5 - result.quality]++;  // 修正统计的索引
-                results.push(`<span class="result-item" style="color: ${result.color}">${result.element} ${result.quality}等</span>`);
+            
+            gameState.day++;
+            gameState.currentWeekDay = (gameState.currentWeekDay % 7) + 1; // 循环 1-7
+            gameState.stats.energy = Math.min(gameState.stats.energy + 10, 100); // Recover energy
+            
+            // Random events based on day and relationship progress
+            triggerRandomDailyEvent();
+            
+            // Check for story progression
+            checkStoryProgression();
+            
+            // Update displays
+            updateStatsDisplay();
+            showModal('新的一天', `第${gameState.day}天开始了。今天是${getWeekdayName(gameState.currentWeekDay)}，会有什么发生呢？`);
+        }
+        
+        // Get weekday name
+        function getWeekdayName(weekday) {
+            const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+            return weekdays[weekday - 1];
+        }
+        
+        // Trigger random daily event
+        function triggerRandomDailyEvent() {
+            // Different probability and events based on relationship progress
+            let eventProbability = 0.3;
+            if (gameState.affection >= 50) eventProbability = 0.4;
+            if (gameState.affection >= 70) eventProbability = 0.5;
+            
+            const randomEvent = Math.random();
+            if (randomEvent < eventProbability) {
+                // Select events based on relationship level
+                let events = [];
+                
+                // Basic events (any affection level)
+                const basicEvents = [
+                    { text: '你在校园偶遇了李教练，他对你微微点头致意。好感度+1', effect: { affection: 1 } },
+                    { text: '你得知李教练最近正为球队的战术烦恼。', effect: {} },
+                    { text: '有传言说李教练年轻时曾是校队明星球员。', effect: {} },
+                    { text: '你听说李教练最近拒绝了校花的表白。', effect: {} },
+                    { text: '你看到李教练在图书馆查阅商业法律相关的书籍，这有些意外。', effect: {} }
+                ];
+                
+                // Mid-level relationship events
+                const midLevelEvents = [
+                    { text: '李教练在走廊上叫住了你，询问了你最近的学习情况。好感度+2', effect: { affection: 2 } },
+                    { text: '一位同学告诉你，李教练在办公室曾提起过你的名字。', effect: {} },
+                    { text: '你偶然发现李教练的桌上放着一份商法相关的合同，看起来他正在为此烦恼。', effect: {} },
+                    { text: '李教练在训练中似乎受了轻伤，你感到一阵莫名的心痛。', effect: {} }
+                ];
+                
+                // High-level relationship events
+                const highLevelEvents = [
+                    { text: '李教练似乎在寻找一些东西，你无意中听到他提到"那本相册去哪了"。', effect: {} },
+                    { text: '李教练看起来心情不佳，但见到你时表情明显放松了一些。好感度+3', effect: { affection: 3 } },
+                    { text: '你在校医院偶遇李教练，他似乎是来复查旧伤。他看到你时表情复杂。', effect: {} },
+                    { text: '李教练的朋友看到你时流露出惊讶的表情，仿佛认识你一样。', effect: {} }
+                ];
+                
+                // Add events based on relationship level
+                events = [...basicEvents];
+                if (gameState.affection >= 30) events = [...events, ...midLevelEvents];
+                if (gameState.affection >= 60) events = [...events, ...highLevelEvents];
+                
+                // Select a random event
+                const eventIndex = Math.floor(Math.random() * events.length);
+                const selectedEvent = events[eventIndex];
+                
+                // Apply event effects
+                if (selectedEvent.effect.affection) {
+                    gameState.affection += selectedEvent.effect.affection;
+                }
+                
+                // Show event
+                showModal('日常事件', selectedEvent.text);
+                
+                // Special random chance to find a memory fragment
+                if (gameState.affection >= 20 && Math.random() < 0.1) {
+                    setTimeout(() => {
+                        findRandomMemoryFragment();
+                    }, 2000);
+                }
             }
-            document.getElementById('goldDisplay').innerHTML = `金币: ${gold.toFixed(2)}`;
-            document.getElementById('countDisplay').innerHTML = `开启次数: ${count}`;
-            document.getElementById('resultDisplay').innerHTML = results.join('');
-            updateDisplays();
+        }
+        
+        // Find a random memory fragment
+        function findRandomMemoryFragment() {
+            // Only fragments not yet discovered
+            const availableFragments = memoryFragmentsData.filter(fragment => 
+                !gameState.memoryFragments.includes(fragment.id)
+            );
+            
+            if (availableFragments.length > 0) {
+                const fragment = availableFragments[Math.floor(Math.random() * availableFragments.length)];
+                gameState.memoryFragments.push(fragment.id);
+                
+                showSpecialEvent('记忆碎片浮现', `你突然想起了什么...\n\n"${fragment.text}"\n\n这段记忆是什么意思？为什么现在才浮现在脑海中？`);
+                
+                // If enough fragments are collected, trigger a major revelation
+                if (gameState.memoryFragments.length >= 3 && !gameState.flags.memoryTrigger) {
+                    setTimeout(() => {
+                        gameState.flags.discoveredHint = true;
+                    }, 2000);
+                }
+            }
         }
 
-        function updateDisplays() {
-            let statsHtml = statistics.map((stat, index) => `${5 - index}等: ${stat}`).join('<br>');
-            document.getElementById('statisticsDisplay').innerHTML = statsHtml;
-            document.getElementById('outputValueDisplay').innerHTML = `总价值: ${totalValue.toFixed(2)}`;
+        // Check for story progression based on game state
+        function checkStoryProgression() {
+            // Unlock memory hints after day 5 and good affection
+            if (gameState.day >= 5 && gameState.affection >= 30 && !gameState.flags.discoveredHint && gameState.memoryFragments.length >= 2) {
+                setTimeout(() => {
+                    showSpecialEvent('奇怪的回忆', '深夜，你被一个梦惊醒。梦中的你站在樱花树下，对面是模糊的人影。\n\n"如果我成为教练，你就..."那个熟悉的声音说道。\n\n这不仅仅是梦，而是被尘封的记忆在试图浮出水面。你和李国良的过去，似乎比你记忆中的要复杂得多...');
+                    gameState.flags.discoveredHint = true;
+                    unlockAchievement('模糊的记忆', '发现了关于过去的线索');
+                }, 1000);
+            }
+            
+            // Update relationship status based on affection
+            if (gameState.affection >= 80) {
+                gameState.relationshipStatus = "亲密关系";
+            } else if (gameState.affection >= 60) {
+                gameState.relationshipStatus = "亲密朋友";
+            } else if (gameState.affection >= 40) {
+                gameState.relationshipStatus = "好友";
+            } else if (gameState.affection >= 20) {
+                gameState.relationshipStatus = "朋友";
+            } else {
+                gameState.relationshipStatus = "认识的人";
+            }
+            
+            // Rival introduction event
+            if (gameState.day >= 8 && gameState.affection >= 25 && !gameState.flags.rivalAppeared) {
+                setTimeout(() => {
+                    renderScene("rival_introduction");
+                }, 1500);
+            }
+            
+            // Law connection discovery
+            if (gameState.day >= 10 && gameState.affection >= 35 && !gameState.flags.discoveredLawConnection) {
+                setTimeout(() => {
+                    renderScene("law_connection");
+                }, 1500);
+            }
+            
+            // Final memory trigger
+            if (gameState.affection >= 85 && gameState.day >= 15 && !gameState.flags.memoryTrigger) {
+                setTimeout(() => {
+                    renderScene("memory_trigger");
+                }, 1500);
+            }
         }
 
-        function sell() {
-            gold += totalValue;
-            totalValue = 0;
-            statistics = [0, 0, 0, 0, 0];
-            updateDisplays();
-            document.getElementById('goldDisplay').innerHTML = `金币: ${gold.toFixed(2)}`;
+        // Buy an item from shop
+        function buyItem(itemId) {
+            const item = itemsData[itemId];
+            
+            if (gameState.money >= item.price) {
+                gameState.money -= item.price;
+                gameState.inventory.push(itemId);
+                updateStatsDisplay();
+                showModal('购买成功', `你购买了${item.name}`);
+                
+                // Apply immediate effects if any
+                if (item.effect) {
+                    if (item.effect.charm) {
+                        gameState.stats.charm += item.effect.charm;
+                        showModal('属性提升', `你的魅力提升了${item.effect.charm}点`);
+                    }
+                    if (item.effect.basketball) {
+                        gameState.stats.basketball += item.effect.basketball;
+                        showModal('属性提升', `你的篮球知识提升了${item.effect.basketball}点`);
+                    }
+                    if (item.effect.law) {
+                        gameState.stats.law += item.effect.law;
+                        showModal('属性提升', `你的商法知识提升了${item.effect.law}点`);
+                    }
+                }
+                
+                // Special case for alumni book
+                if (itemId === 'alumnibook' && !gameState.flags.foundOldPhoto) {
+                    setTimeout(() => {
+                        showModal('惊人发现', '你翻阅校友录时，在一年前的篮球社团页面发现了一张照片。照片角落里，李教练和一位看起来很像你的女生站在一起，似乎在热烈讨论着什么。\n\n这不可能...你从未加入过篮球社团。这到底是怎么回事？');
+                        
+                        setTimeout(() => {
+                            gameState.flags.foundOldPhoto = true;
+                            gameState.memoryFragments.push('fragment2');
+                            updateStatsDisplay();
+                            unlockAchievement('照片线索', '发现了一张神秘的照片');
+                        }, 3000);
+                    }, 2000);
+                }
+            } else {
+                showModal('金钱不足', '你没有足够的金钱购买这个物品');
+            }
         }
 
-        function reset() {
-            gold = 2000;
-            totalValue = 0;
-            statistics = [0, 0, 0, 0, 0];
-            count = 0;
-            document.getElementById('resultDisplay').innerHTML = '';
-            updateDisplays();
-            document.getElementById('goldDisplay').innerHTML = `金币: ${gold.toFixed(2)}`;
-            document.getElementById('countDisplay').innerHTML = `开启次数: ${count}`;
+        // Use an item from inventory
+        function useItem(itemId) {
+            const item = itemsData[itemId];
+            
+            // Different handling based on current location
+            if (gameState.currentLocation === 'basketball_court') {
+                if (itemId === 'basketball' || itemId === 'sportswatch' || itemId === 'cookies' || itemId === 'tacticsbook' || itemId === 'energydrink') {
+                    // Give gift to Guoliang
+                    showModal('赠送礼物', `你将${item.name}送给了李教练。`, () => {
+                        // Remove item from inventory
+                        const itemIndex = gameState.inventory.indexOf(itemId);
+                        if (itemIndex > -1) {
+                            gameState.inventory.splice(itemIndex, 1);
+                        }
+                        
+                        // Increase affection
+                        if (item.effect && item.effect.affection) {
+                            gameState.affection += item.effect.affection;
+                            updateStatsDisplay();
+                            
+                            // Flag for first gift
+                            if (!gameState.flags.firstGift) {
+                                gameState.flags.firstGift = true;
+                                unlockAchievement('初次赠礼', '第一次给李教练送礼物');
+                                renderScene("first_gift");
+                            } else {
+                                showModal('好感度提升', `李教练收下了你的礼物，好感度增加了${item.effect.affection}点`, () => {
+                                    showRandomGiftReaction(itemId);
+                                });
+                            }
+                        }
+                    });
+                } else if (itemId === 'lawnotes' && gameState.stats.law >= 50) {
+                    showModal('展示笔记', '你犹豫地拿出商法笔记，"李教练，我听说球队有合同问题...我是商法专业的，也许能帮上忙？"', () => {
+                        const itemIndex = gameState.inventory.indexOf(itemId);
+                        if (itemIndex > -1) {
+                            gameState.inventory.splice(itemIndex, 1);
+                        }
+                        
+                        renderScene("law_help_offer");
+                    });
+                } else {
+                    showModal('不适合', '这个物品不适合在这里使用');
+                }
+            } else if (gameState.currentLocation === 'office' && itemId === 'lawnotes' && gameState.flags.discoveredLawConnection) {
+                showModal('提供帮助', '你拿出精心准备的商法笔记，"李教练，我整理了一些关于体育赞助合同的法律要点，也许对您处理球队合同有帮助。"', () => {
+                    const itemIndex = gameState.inventory.indexOf(itemId);
+                    if (itemIndex > -1) {
+                        gameState.inventory.splice(itemIndex, 1);
+                    }
+                    
+                    renderScene("office_law_help");
+                });
+            } else if (gameState.currentLocation === 'cafe' && (itemId === 'cookies' || itemId === 'energydrink')) {
+                showModal('咖啡厅', `你想在咖啡厅使用${item.name}吗？`, () => {
+                    if (Math.random() < 0.3 && !gameState.flags.specialEncounter) {
+                        // 特殊咖啡厅邂逅事件
+                        const itemIndex = gameState.inventory.indexOf(itemId);
+                        if (itemIndex > -1) {
+                            gameState.inventory.splice(itemIndex, 1);
+                        }
+                        
+                        renderScene("cafe_special_encounter");
+                    } else {
+                        showDialog("系统", `你在咖啡厅享用了${item.name}，感觉精神了一些。体力+5`);
+                        gameState.stats.energy = Math.min(gameState.stats.energy + 5, 100);
+                        
+                        const itemIndex = gameState.inventory.indexOf(itemId);
+                        if (itemIndex > -1) {
+                            gameState.inventory.splice(itemIndex, 1);
+                        }
+                        updateStatsDisplay();
+                    }
+                });
+            } else {
+                showModal('不适合', '你需要在合适的地点使用这个物品。篮球相关的物品可以在篮球场送给李教练。');
+            }
         }
-    </script>
+
+        // Show random reaction based on gift
+        function showRandomGiftReaction(itemId) {
+            const reactions = {
+                basketball: [
+                    "李教练拿起篮球，熟练地转了几下，目光依然冰冷，但语气缓和了些许。'谢谢，这个质量不错。'",
+                    "李教练看了看篮球，习惯性地掂量了一下。'正好球队需要多备几个，谢谢。'他的话简短，却不显得敷衍。",
+                    "李教练将篮球放在一旁，钢铁般的目光中闪过一丝好奇。'你很热爱篮球？有兴趣了解更多战术吗？'他问道，似乎对你产生了些许兴趣。"
+                ],
+                sportswatch: [
+                    "李教练看了看手表，强壮的手腕和这款手表意外地搭配。'这个功能很齐全，谢谢。'他的嘴角微微上扬，露出难得的笑意。",
+                    "李教练将手表戴在粗壮的手腕上，调整了一下表带。'计时会更方便了，谢谢。'他试着按了几个按钮，看起来很满意。",
+                    "李教练惊讶地看着手表，这是他冰山表情中少有的情绪波动。'这个款式...我一直想买，谢谢。'他的话里透露着真诚。"
+                ],
+                cookies: [
+                    "李教练尝了一块饼干，咀嚼的样子让人想起一头沉默的狮子。'味道不错，是你做的吗？'他罕见地主动提问。",
+                    "李教练将饼干放在办公桌上，整齐地摆好。'谢谢，训练后会吃的。'简短的回应中蕴含着难得的温度。",
+                    "李教练眼睛亮了一下，像冰面上突然映出的阳光。'我很久没吃到手工饼干了，谢谢。'他的语气中透露出一丝难以察觉的怀念。"
+                ],
+                tacticsbook: [
+                    "李教练翻阅了几页，那双常年握篮球的粗糙大手小心翼翼地翻动着书页。'这本我一直在找，谢谢你。'他的目光专注，对你的评价似乎提高了。",
+                    "李教练认真地看了看封面，强健的身躯微微前倾。'这是最新版本，非常感谢。'他的声音低沉有力。",
+                    "李教练的表情变得认真，与平时训练球员时如出一辙。'这本书...很适合我目前的研究，谢谢。'他的语气中有一种你从未听过的郑重。"
+                ],
+                energydrink: [
+                    "李教练接过饮料，他强壮的手臂上青筋隐约可见。'谢谢，训练后确实需要补充能量。'他的话难得超过了五个字。",
+                    "李教练看了看饮料，眉头微微舒展。'正好渴了，谢谢。'他一口气喝了大半瓶，像是确实需要这份能量。",
+                    "李教练拿着饮料，嘴角出现了一丝你从未见过的笑意。'你怎么知道我喜欢这个牌子？'他问道，语气中有着好奇。"
+                ]
+            };
+            
+            const reaction = reactions[itemId][Math.floor(Math.random() * reactions[itemId].length)];
+            showDialog("李国良", reaction);
+        }
+
+        // Visit a location
+        function visitLocation(locationId) {
+            gameState.currentLocation = locationId;
+            bgImage.src = backgrounds[locationId];
+            closeWindow('map-window');
+            
+            // Add to visited locations if first time
+            if (!gameState.visitedLocations.includes(locationId)) {
+                gameState.visitedLocations.push(locationId);
+                unlockAchievement(`探索：${getLocationName(locationId)}`, `首次访问${getLocationName(locationId)}`);
+            }
+            
+            // Handle location-specific events
+            switch(locationId) {
+                case 'basketball_court':
+                    if (!gameState.flags.metGuoliang) {
+                        renderScene("first_meeting");
+                    } else {
+                        // Check for special basketball court events based on progress
+                        if (gameState.day >= 7 && gameState.affection >= 30 && !gameState.flags.taughtBasketball && Math.random() < 0.4) {
+                            renderScene("basketball_lesson");
+                        } else {
+                            const reactions = [
+                                "你来到篮球场，李教练正在指导球员们训练。他高大的身影在球场上格外醒目，球员们对他言听计从。",
+                                "篮球场上，李教练正在战术板上画着什么。他浓眉紧锁，肌肉线条分明的手臂展现出非凡的力量感。",
+                                "李教练正在场边观察球员们的表现，神情专注。他健壮的身躯宛如雕塑般挺立，散发出不容忽视的气场。"
+                            ];
+                            showDialog("系统", reactions[Math.floor(Math.random() * reactions.length)]);
+                            characterImage.src = characters.guoliang;
+                        }
+                    }
+                    break;
+                    
+                case 'library':
+                    characterImage.src = characters.natsu;
+                    const libraryEvents = [
+                        "你在图书馆找到一本关于篮球战术的书，学习了一些知识。篮球技能+1",
+                        "你在图书馆的一角偶然看到一份旧校报，上面有李教练年轻时参加比赛的照片。他的眼神与现在一样坚定，却少了几分冷漠。",
+                        "你在图书馆安静地学习商法，提升了自己的知识。商法技能+1",
+                        "在翻阅学校历史资料时，你发现一张篮球队的老照片。照片上有个模糊的身影，总让你感觉莫名熟悉。"
+                    ];
+                    
+                    const eventIndex = Math.floor(Math.random() * libraryEvents.length);
+                    showDialog("系统", libraryEvents[eventIndex]);
+                    
+                    if (eventIndex === 0) {
+                        gameState.stats.basketball += 1;
+                    } else if (eventIndex === 2) {
+                        gameState.stats.law += 1;
+                    } else if (eventIndex === 3 && !gameState.memoryFragments.includes('fragment1')) {
+                        setTimeout(() => {
+                            gameState.memoryFragments.push('fragment1');
+                            showDialog("结城夏奈", "（自言自语）奇怪...那个身影为什么会让我感到心跳加速？难道我曾经见过？");
+                            updateStatsDisplay();
+                        }, 2000);
+                    }
+                    updateStatsDisplay();
+                    break;
+                    
+                case 'cafe':
+                    characterImage.src = characters.natsu;
+                    if (!gameState.flags.visitedCafe) {
+                        showDialog("系统", "你来到校园附近的咖啡厅，这里环境舒适，是学生们最喜欢的休息地点。听说李教练偶尔也会来这里喝咖啡。");
+                        gameState.flags.visitedCafe = true;
+                    } else if (Math.random() < 0.2 && gameState.affection >= 20) {
+                        renderScene("cafe_encounter");
+                    } else {
+                        showDialog("系统", "咖啡厅里人不多，你找了个安静的位置坐下。舒适的环境让你心情放松了一些。心情变为：愉快");
+                        gameState.mood = "愉快";
+                        updateStatsDisplay();
+                    }
+                    break;
+                    
+                case 'office':
+                    if (!gameState.flags.knowsSchedule && gameState.affection >= 25) {
+                        renderScene("discover_schedule");
+                    } else if (gameState.flags.discoveredLawConnection && !gameState.flags.helpedWithContract) {
+                        renderScene("contract_help_opportunity");
+                    } else {
+                        characterImage.src = characters.natsu;
+                        showDialog("系统", "你来到教师办公室区域，但李教练不在他的办公室。也许他正在球场或其他地方？");
+                    }
+                    break;
+                    
+                case 'classroom':
+                    characterImage.src = characters.natsu;
+                    const classroomEvents = [
+                        "你在商法课上专心听讲，提高了自己的专业知识。商法技能+1",
+                        "教授提到了一个体育赞助合同的案例，这让你想到了李教练可能面临的问题。",
+                        "下课后，一位同学向你打听李教练的情况，看来他的魅力不只对你有效。"
+                    ];
+                    
+                    const classEvent = classroomEvents[Math.floor(Math.random() * classroomEvents.length)];
+                    showDialog("系统", classEvent);
+                    
+                    if (classEvent === classroomEvents[0]) {
+                        gameState.stats.law += 1;
+                        updateStatsDisplay();
+                    }
+                    break;
+                    
+                case 'home':
+                    characterImage.src = characters.natsu;
+                    showDialog("系统", "你回到了自己的公寓。这是一天结束的好地方，可以整理思绪，计划下一步行动。");
+                    
+                    // Random chance for special dream if memory hints discovered
+                    if (gameState.flags.discoveredHint && Math.random() < 0.3) {
+                        setTimeout(() => {
+                            showDialog("系统", "夜晚，你做了一个奇怪的梦...");
+                            setTimeout(() => {
+                                renderScene("memory_dream");
+                            }, 2000);
+                        }, 2000);
+                    }
+                    break;
+                    
+                default:
+                    characterImage.src = characters.natsu;
+                    showDialog("系统", `你来到了${getLocationName(locationId)}。`);
+            }
+        }
+
+        // Get location name
+        function getLocationName(locationId) {
+            const names = {
+                home: "公寓",
+                basketball_court: "篮球场",
+                library: "图书馆",
+                cafe: "咖啡厅",
+                park: "公园",
+                gym: "健身房",
+                classroom: "教室",
+                office: "教师办公室"
+            };
+            return names[locationId] || locationId;
+        }
+
+        // Show modal dialog
+        function showModal(title, text, callback = null) {
+            modalTitle.textContent = title;
+            modalText.textContent = text;
+            modal.style.display = 'flex';
+            modalCallback = callback;
+        }
+
+        // Close modal
+        function closeModal() {
+            modal.style.display = 'none';
+            modalCallback = null;
+        }
+
+        // Confirm modal action
+        function confirmModal() {
+            modal.style.display = 'none';
+            if (modalCallback) {
+                modalCallback();
+                modalCallback = null;
+            }
+        }
+        
+        // Show special event
+        function showSpecialEvent(title, text, callback = null) {
+            specialEventTitle.textContent = title;
+            specialEventText.textContent = text;
+            specialEvent.style.display = 'flex';
+            specialEventCallback = callback;
+        }
+        
+        // Close special event
+        function closeSpecialEvent() {
+            specialEvent.style.display = 'none';
+            if (specialEventCallback) {
+                specialEventCallback();
+                specialEventCallback = null;
+            }
+        }
+
+        // Show dialog with character name
+        function showDialog(name, text, choices = null) {
+            // 检查DOM元素是否存在
+            if (!characterName || !dialogText || !choicesContainer) {
+                console.error("对话框元素未找到!");
+                return;
+            }
+            
+            characterName.textContent = name;
+            dialogText.textContent = text;
+            
+            if (choices) {
+                renderChoices(choices);
+            } else {
+                choicesContainer.innerHTML = '<button class="choice-button" onclick="continueDialog()">继续</button>';
+            }
+        }
+
+        // Continue dialog (when no choices)
+        function continueDialog() {
+            // Default continue, just clear the dialog
+            showDialog("系统", "你决定做什么？");
+            choicesContainer.innerHTML = '';
+        }
+
+        // Render choices
+        function renderChoices(choices) {
+            // 清空已有选项
+            choicesContainer.innerHTML = '';
+            
+            // 为每个选项创建按钮
+            choices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = choice.text;
+                button.onclick = () => makeChoice(index, choice.next);
+                choicesContainer.appendChild(button);
+            });
+        }
+
+        // Make a choice
+        function makeChoice(index, nextScene = null) {
+            if (nextScene) {
+                renderScene(nextScene);
+            } else if (gameState.currentScene === "intro") {
+                renderScene("day1_morning");
+            }
+        }
+
+        // Unlock achievement
+        function unlockAchievement(title, description) {
+            if (!gameState.achievements.includes(title)) {
+                gameState.achievements.push(title);
+                
+                // Show achievement notification
+                achievementNotification.textContent = `🏆 解锁成就：${title}`;
+                achievementNotification.style.display = 'block';
+                
+                setTimeout(() => {
+                    achievementNotification.style.display = 'none';
+                }, 3000);
+            }
+        }</script>
 </body>
 </html>
