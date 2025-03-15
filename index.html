@@ -1060,17 +1060,106 @@
         };
 
         // Items data
-        const itemsData = {
-            basketball: { name: "篮球", icon: "🏀", description: "送给李教练，对方好感度+5", price: 300, effect: { affection: 5 } },
-            sportswatch: { name: "运动手表", icon: "⌚", description: "送给李教练，对方好感度+10", price: 800, effect: { affection: 10 } },
-            cookies: { name: "手工饼干", icon: "🍪", description: "送给李教练，对方好感度+3", price: 100, effect: { affection: 3 } },
-            tacticsbook: { name: "篮球战术书", icon: "📖", description: "送给李教练，对方好感度+15", price: 1200, effect: { affection: 15 } },
-            fashionclothes: { name: "时尚服装", icon: "👚", description: "提升魅力属性+5", price: 500, effect: { charm: 5 } },
-            basketballbook: { name: "篮球规则书", icon: "📚", description: "提升篮球知识+5", price: 300, effect: { basketball: 5 } },
-            lawnotes: { name: "商法笔记", icon: "📝", description: "你精心整理的商法笔记，也许会派上用场", price: 200, effect: { law: 3 } },
-            energydrink: { name: "能量饮料", icon: "🍶", description: "李教练喜欢的饮料", price: 50, effect: { affection: 2 } },
-            alumnibook: { name: "校友录", icon: "🔍", description: "可能包含过去的线索", price: 350, effect: { } }
-        };
+const itemsData = {
+    basketball: { 
+        name: "篮球", 
+        icon: "🏀", 
+        description: "送给李教练，对方好感度+5", 
+        price: 300, 
+        effect: { affection: 5 } 
+    },
+    sportswatch: { 
+        name: "运动手表", 
+        icon: "⌚", 
+        description: "送给李教练，对方好感度+10", 
+        price: 800, 
+        effect: { affection: 10 } 
+    },
+    cookies: { 
+        name: "手工饼干", 
+        icon: "🍪", 
+        description: "送给李教练，对方好感度+3", 
+        price: 100, 
+        effect: { affection: 3 } 
+    },
+    tacticsbook: { 
+        name: "篮球战术书", 
+        icon: "📖", 
+        description: "送给李教练，对方好感度+15", 
+        price: 1200, 
+        effect: { affection: 15 } 
+    },
+    fashionclothes: { 
+        name: "时尚服装", 
+        icon: "👚", 
+        description: "提升魅力属性+5", 
+        price: 500, 
+        effect: { charm: 5 } 
+    },
+    basketballbook: { 
+        name: "篮球规则书", 
+        icon: "📚", 
+        description: "提升篮球知识+5", 
+        price: 300, 
+        effect: { basketball: 5 } 
+    },
+    lawnotes: { 
+        name: "商法笔记", 
+        icon: "📝", 
+        description: "你精心整理的商法笔记，也许会派上用场", 
+        price: 200, 
+        effect: { law: 3 } 
+    },
+    energydrink: { 
+        name: "能量饮料", 
+        icon: "🍶", 
+        description: "李教练喜欢的饮料", 
+        price: 50, 
+        effect: { affection: 2 } 
+    },
+    alumnibook: { 
+        name: "校友录", 
+        icon: "🔍", 
+        description: "可能包含过去的线索", 
+        price: 350, 
+        effect: {} 
+    },
+    studyNotes: { 
+        name: "体育管理笔记", 
+        icon: "📝", 
+        description: "你做的体育管理课笔记，可能对李国良的学习有帮助", 
+        price: 0, // 无需购买，通过特定事件获得
+        effect: { affection: 4 } 
+    },
+    recoveryTape: { 
+        name: "运动贴布", 
+        icon: "🩹", 
+        description: "高质量的运动肌肉贴布，对膝盖恢复有帮助", 
+        price: 250, 
+        effect: { affection: 4 } 
+    },
+    nutritionBar: { 
+        name: "蛋白能量棒", 
+        icon: "🍫", 
+        description: "训练后补充能量的佳品，健身爱好者的最爱", 
+        price: 80, 
+        effect: { affection: 2, energy: 10 } 
+    },
+    tacticsApp: { 
+        name: "篮球战术APP会员", 
+        icon: "📱", 
+        description: "最新的篮球战术分析APP会员，内含专业战术库", 
+        price: 600, 
+        effect: { affection: 8 } 
+    },
+    studyGuide: { 
+        name: "期末考试复习资料", 
+        icon: "📚", 
+        description: "你整理的详尽复习资料，对同为学生的李国良很有用", 
+        price: 0, // 通过特定事件获得
+        effect: { affection: 6 } 
+    }
+}; // 修复：添加了缺失的右大括号
         
         // Memory fragments data
         const memoryFragmentsData = [
@@ -1083,6 +1172,419 @@
             { id: "fragment7", title: "合同纠纷", text: "我好像曾经帮他处理过一份合同？关于什么的？" }
         ];
 
+// 更新李国良角色形象设定
+const characterProfiles = {
+    guoliang: {
+        name: "李国良",
+        age: 20,
+        year: "大三",
+        major: "体育教育学",
+        position: "篮球队学生教练",
+        personality: "认真、严格、对篮球充满热情、有些内向、不善言辞",
+        background: "大一时是校队主力，因出色的战术分析能力被学校特别任命为学生教练，同时继续自己的学业",
+        likes: ["篮球战术研究", "黑咖啡", "运动科学书籍", "健身"],
+        dislikes: ["虚伪的人", "不守时", "放弃精神"]
+    },
+    natsu: {
+        name: "结城夏奈",
+        age: 19,
+        year: "大二",
+        major: "商法",
+        personality: "聪明、认真、有些害羞但遇到熟悉的事物会变得自信",
+        background: "从小对法律有兴趣，高中时参加过模拟法庭比赛获奖，现在是商法社团的活跃成员",
+        likes: ["商法案例分析", "整理笔记", "烹饪", "摄影"],
+        dislikes: ["不讲道理的人", "混乱的环境"]
+    },
+    rival: {
+        name: "相泽美咲",
+        age: 22,
+        year: "大四",
+        major: "体育管理",
+        position: "学生会体育部部长",
+        personality: "自信、强势、有领导力、有些骄傲",
+        background: "与李国良同届同学，国中时曾是篮球校队，现在是校园风云人物",
+        likes: ["掌控局面", "组织活动", "赢得比赛"],
+        dislikes: ["被忽视", "能力不足的人"]
+    }
+};
+
+// 添加新的记忆碎片
+const newMemoryFragments = [
+    { id: "fragment8", title: "课堂辩论", text: "商法课上，李国良与你就体育赞助合同案例进行激烈辩论，教授对你们的表现赞赏有加。" },
+    { id: "fragment9", title: "午餐邀约", text: "某个阳光明媚的中午，李国良害羞地邀请你一起吃午餐，聊起了他对篮球战术的独特见解。" },
+    { id: "fragment10", title: "受伤的膝盖", text: "一场重要比赛中，李国良为救球冲出场外，膝盖严重受伤。你第一个冲到他身边，满脸担忧。" },
+    { id: "fragment11", title: "医院的约定", text: "医院病房里，李国良握着你的手，眼神坚定：'等我康复，我一定会成为最好的教练...'" },
+    { id: "fragment12", title: "遗忘的原因", text: "那次意外后，你转学一年。回来时发现李国良已成为教练，而你因事故失去了部分记忆。" }
+];
+
+// 将新的记忆碎片添加到原有数组
+function updateMemoryFragments() {
+    // 将新的记忆碎片与原有数组合并
+    memoryFragmentsData = [...memoryFragmentsData, ...newMemoryFragments];
+}
+
+// 添加新的剧情场景
+const newScenes = {
+    // 李国良作为学生教练的日常
+    "student_coach_practice": function() {
+        characterImage.src = characters.guoliang;
+        bgImage.src = backgrounds.basketball_court;
+        showDialog("系统", "你来到篮球场，李国良正在指导球员们训练。虽然他比队员们大不了多少，但他的专业知识和严肃态度让所有人都心服口服。");
+        setTimeout(() => {
+            showDialog("队员", "李教练，这个战术配合我们还不太熟练，能再示范一下吗？");
+            setTimeout(() => {
+                showDialog("李国良", "好。（放下战术板，走上球场）要这样移动，然后...");
+                setTimeout(() => {
+                    showDialog("系统", "李国良亲自下场示范，他的动作干脆利落，技术娴熟，和其他队员配合默契。这一刻的他充满活力和自信，与平时严肃的样子判若两人。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "（心想）他打球的样子真迷人...完全不像平时那样沉默寡言。", [
+                            { text: "继续观看训练", next: "continue_watching" },
+                            { text: "鼓起勇气打招呼", next: "greet_during_practice" }
+                        ]);
+                    }, 2000);
+                }, 2000);
+            }, 2000);
+        }, 2000);
+    },
+    
+    // 观看训练
+    "continue_watching": function() {
+        showDialog("系统", "你选择安静地观看训练。李国良偶尔会扫视场边，当他注意到你时，似乎略微点了点头。");
+        setTimeout(() => {
+            showDialog("系统", "训练结束后，队员们三三两两地离开。李国良留下来整理器材。");
+            setTimeout(() => {
+                showDialog("李国良", "（走近你）你一直在看？");
+                setTimeout(() => {
+                    showDialog("结城夏奈", "嗯...你的训练方式很专业，队员们都很尊敬你。", [
+                        { text: "询问他的战术理念", next: "ask_tactics" },
+                        { text: "提及他的球技", next: "mention_skills" }
+                    ]);
+                }, 2000);
+            }, 2000);
+        }, 2000);
+    },
+    
+    // 训练中打招呼
+    "greet_during_practice": function() {
+        showDialog("结城夏奈", "李教练，加油！");
+        setTimeout(() => {
+            showDialog("系统", "你的声音引起了场上人的注意。李国良转头看你，有些意外但没有不满。");
+            setTimeout(() => {
+                showDialog("李国良", "（对队员们）继续练习那个配合，我看到问题在哪了。");
+                setTimeout(() => {
+                    showDialog("系统", "他走到场边，站在你旁边。");
+                    setTimeout(() => {
+                        showDialog("李国良", "结城同学...有什么事吗？");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "没什么特别的事，就是...想看看篮球训练是怎么样的。你作为学生教练，一定压力很大吧？", [
+                                { text: "表达对他能力的钦佩", next: "express_admiration_skills" },
+                                { text: "询问如何平衡学业和教练工作", next: "ask_about_balance" }
+                            ]);
+                        }, 2000);
+                    }, 2000);
+                }, 2000);
+            }, 2000);
+        }, 2000);
+    },
+    
+    // 询问战术理念
+    "ask_tactics": function() {
+        showDialog("结城夏奈", "你的战术安排很有条理，能告诉我你是怎么设计这些战术的吗？");
+        setTimeout(() => {
+            showDialog("李国良", "（眼睛亮起来）每个战术都要考虑队员特点和对手分析...");
+            setTimeout(() => {
+                showDialog("系统", "李国良开始热情地讲解篮球战术，他的言语中充满了专业术语和独到见解。你发现平时沉默的他在谈论篮球时如此健谈。");
+                setTimeout(() => {
+                    showDialog("李国良", "（突然停下）抱歉...说太多了。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "不，很有趣！你对篮球的热情真的很打动人。");
+                        setTimeout(() => {
+                            showDialog("李国良", "（微微一笑）谢谢理解。大多数人听不懂就走神了。");
+                            setTimeout(() => {
+                                gameState.affection += 5;
+                                updateStatsDisplay();
+                                showDialog("系统", "你们有了一次关于篮球的深入交流，李国良对你的印象明显改善。好感度+5");
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                }, 2000);
+            }, 2000);
+        }, 2000);
+    },
+    
+    // 提及他的球技
+    "mention_skills": function() {
+        showDialog("结城夏奈", "刚才看你示范动作，球技真的很厉害。为什么选择当教练而不是继续当球员呢？");
+        setTimeout(() => {
+            showDialog("李国良", "（表情略微黯淡）膝盖伤势...不能高强度比赛了。");
+            setTimeout(() => {
+                showDialog("结城夏奈", "啊，对不起！我不是故意提起不愉快的事。");
+                setTimeout(() => {
+                    showDialog("李国良", "没关系。（略微放松）做教练也有意义，能把知识传授给他们。");
+                    setTimeout(() => {
+                        showDialog("系统", "李国良的目光变得柔和，似乎在回忆什么。");
+                        setTimeout(() => {
+                            showDialog("李国良", "有人曾告诉我，如果不能上场比赛，就用其他方式实现篮球梦想。");
+                            setTimeout(() => {
+                                if (!gameState.memoryFragments.includes('fragment11')) {
+                                    gameState.memoryFragments.push('fragment11');
+                                }
+                                gameState.affection += 4;
+                                updateStatsDisplay();
+                                showDialog("系统", "李国良难得分享了个人故事，你们的距离拉近了。好感度+4");
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                }, 2000);
+            }, 2000);
+        }, 2000);
+    },
+    
+    // 表达对能力的钦佩
+    "express_admiration_skills": function() {
+        showDialog("结城夏奈", "我真的很佩服你，不仅是校队的学生教练，还能兼顾自己的学业。这种能力和责任感很少见。");
+        setTimeout(() => {
+            showDialog("李国良", "（略显不好意思）只是...习惯了高效安排时间。而且，篮球对我来说不只是活动，是热爱。");
+            setTimeout(() => {
+                showDialog("结城夏奈", "这种对热爱的坚持很令人敬佩。我学商法也是因为真心喜欢。");
+                setTimeout(() => {
+                    showDialog("李国良", "（认真地看着你）坚持热爱的人...值得尊敬。");
+                    setTimeout(() => {
+                        gameState.affection += 6;
+                        updateStatsDisplay();
+                        showDialog("系统", "你们找到了共同点，李国良对你的评价提高了。好感度+6");
+                    }, 2000);
+                }, 2000);
+            }, 2000);
+        }, 2000);
+    },
+    
+    // 询问如何平衡学业和工作
+    "ask_about_balance": function() {
+        showDialog("结城夏奈", "你是怎么平衡学业和教练工作的？一定很辛苦吧？");
+        setTimeout(() => {
+            showDialog("李国良", "时间管理很重要。（稍作思考）实际上，篮球和学习对我来说相辅相成。");
+            setTimeout(() => {
+                showDialog("结城夏奈", "相辅相成？怎么说？");
+                setTimeout(() => {
+                    showDialog("李国良", "体育教育专业的理论在实践中验证，实践又促进理论理解。你的商法，也有类似应用吧？");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "确实！案例分析和实际法务工作是相通的。没想到我们的学习方式有相似之处。");
+                        setTimeout(() => {
+                            gameState.affection += 5;
+                            updateStatsDisplay();
+                            showDialog("系统", "李国良似乎欣赏你对学习的认真态度，你们达成了某种共鸣。好感度+5");
+                        }, 2000);
+                    }, 2000);
+                }, 2000);
+            }, 2000);
+        }, 2000);
+    },
+    
+    // 课堂初遇 - 记忆恢复关键剧情
+    "classroom_first_meeting": function() {
+        characterImage.src = characters.natsu;
+        bgImage.src = backgrounds.classroom;
+        showDialog("系统", "你坐在商法选修课教室里，正在整理讲义。突然，教室门口出现了一个高大的身影。");
+        setTimeout(() => {
+            characterImage.src = characters.guoliang;
+            showDialog("系统", "一个篮球队服装的学生走进教室，环顾四周后，在你旁边的空位坐下。他身材高大，看起来有些格格不入。");
+            setTimeout(() => {
+                showDialog("结城夏奈", "（好奇）你也选了这门课？");
+                setTimeout(() => {
+                    showDialog("李国良", "（点头）嗯，体育教育专业也需要了解合同法律。");
+                    setTimeout(() => {
+                        showDialog("结城夏奈", "哦，我是商法专业的。如果有不懂的地方，可以问我。");
+                        setTimeout(() => {
+                            showDialog("李国良", "（略显惊讶）谢谢...我叫李国良。");
+                            setTimeout(() => {
+                                showDialog("结城夏奈", "我是结城夏奈。（微笑）");
+                                setTimeout(() => {
+                                    showDialog("系统", "这是你们第一次相遇的回忆。后来的课堂辩论，共同学习，午餐约会...那些被遗忘的记忆碎片开始串联起来。");
+                                    setTimeout(() => {
+                                        if (!gameState.memoryFragments.includes('fragment8')) {
+                                            gameState.memoryFragments.push('fragment8');
+                                        }
+                                        if (!gameState.memoryFragments.includes('fragment9')) {
+                                            gameState.memoryFragments.push('fragment9');
+                                        }
+                                        gameState.flags.rememberedFirstMeeting = true;
+                                        updateStatsDisplay();
+                                        showDialog("系统", "你想起了与李国良初次相识的场景。为什么这些记忆会被遗忘？而他为什么不提起从前的关系？");
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                }, 2000);
+            }, 2000);
+        }, 2000);
+    },
+    
+    // 膝伤事故 - 记忆恢复关键剧情
+    "knee_injury_accident": function() {
+        bgImage.src = backgrounds.basketball_court;
+        showDialog("系统", "记忆画面：一年前，李国良还是球队的王牌球员，正在参加重要比赛。");
+        setTimeout(() => {
+            characterImage.src = characters.guoliang;
+            showDialog("系统", "比赛进入最后时刻，球队落后两分。李国良突破对方防守，跃起准备扣篮得分。");
+            setTimeout(() => {
+                showDialog("系统", "就在这时，对方球员的阻挡让他失去平衡，为了避免撞到观众席的你，他改变了落地姿势。");
+                setTimeout(() => {
+                    characterImage.src = characters.natsu;
+                    showDialog("结城夏奈", "（惊恐）小心！");
+                    setTimeout(() => {
+                        showDialog("系统", "一声清脆的'咔嚓'声，李国良重重摔在地上，膝盖以一种不自然的角度弯曲。");
+                        setTimeout(() => {
+                            showDialog("结城夏奈", "（冲向场内）国良！");
+                            setTimeout(() => {
+                                showDialog("系统", "你第一个冲到他身边，脸上满是泪水。他疼得冷汗直流，却还是勉强对你笑了笑。");
+                                setTimeout(() => {
+                                    characterImage.src = characters.guoliang;
+                                    showDialog("李国良", "别...担心，没事。");
+                                    setTimeout(() => {
+                                        if (!gameState.memoryFragments.includes('fragment10')) {
+                                            gameState.memoryFragments.push('fragment10');
+                                        }
+                                        gameState.flags.rememberedInjury = true;
+                                        updateStatsDisplay();
+                                        showDialog("系统", "你终于想起，李国良的膝伤是为了保护你而造成的。这个沉重的记忆一直被你潜意识压抑着。");
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                }, 2000);
+            }, 2000);
+        }, 2000);
+    },
+    
+    // 医院约定 - 记忆恢复关键剧情
+    "hospital_promise": function() {
+        bgImage.src = backgrounds.home;
+        showDialog("系统", "记忆画面：医院病房，李国良刚做完手术，你守在他床边整整一晚。");
+        setTimeout(() => {
+            characterImage.src = characters.guoliang;
+            showDialog("李国良", "（虚弱地）医生说...可能再也不能打球了。");
+            setTimeout(() => {
+                characterImage.src = characters.natsu;
+                showDialog("结城夏奈", "（握住他的手）一定会好起来的，别放弃！");
+                setTimeout(() => {
+                    characterImage.src = characters.guoliang;
+                    showDialog("李国良", "（苦笑）没想到大一就结束球员生涯。所有计划都...");
+                    setTimeout(() => {
+                        characterImage.src = characters.natsu;
+                        showDialog("结城夏奈", "那就换个方式继续！你的战术分析能力那么强，为什么不当教练呢？");
+                        setTimeout(() => {
+                            characterImage.src = characters.guoliang;
+                            showDialog("李国良", "教练？（思考）其实...我确实对战术研究比较有兴趣。");
+                            setTimeout(() => {
+                                characterImage.src = characters.natsu;
+                                showDialog("结城夏奈", "我相信你会成为最棒的教练！我会一直支持你的。");
+                                setTimeout(() => {
+                                    characterImage.src = characters.guoliang;
+                                    showDialog("李国良", "（认真地）如果我成为教练，你就答应我一个条件，好吗？");
+                                    setTimeout(() => {
+                                        characterImage.src = characters.natsu;
+                                        showDialog("结城夏奈", "什么条件？");
+                                        setTimeout(() => {
+                                            characterImage.src = characters.guoliang;
+                                            showDialog("李国良", "等我康复...成为校队教练的那天，你...");
+                                            setTimeout(() => {
+                                                showDialog("系统", "记忆在这里突然中断，你无法想起他当时说了什么。");
+                                                setTimeout(() => {
+                                                    if (!gameState.memoryFragments.includes('fragment11')) {
+                                                        gameState.memoryFragments.push('fragment11');
+                                                    }
+                                                    gameState.flags.rememberedPromise = true;
+                                                    updateStatsDisplay();
+                                                    showDialog("系统", "那个约定是什么？为什么你会忘记？这些谜团仍需解开...");
+                                                }, 2000);
+                                            }, 2000);
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                }, 2000);
+            }, 2000);
+        }, 2000);
+    },
+    
+    // 真相揭露 - 主线剧情高潮
+    "truth_revelation": function() {
+        bgImage.src = backgrounds.park;
+        showDialog("系统", "学校樱花树下，你鼓起勇气直接面对李国良，询问那些被遗忘的记忆。");
+        setTimeout(() => {
+            characterImage.src = characters.guoliang;
+            showDialog("李国良", "（震惊）你...想起来了？");
+            setTimeout(() => {
+                characterImage.src = characters.natsu;
+                showDialog("结城夏奈", "部分记忆回来了。我们曾经很亲密，对吗？为什么你一直假装不认识我？");
+                setTimeout(() => {
+                    characterImage.src = characters.guoliang;
+                    showDialog("李国良", "（深吸一口气）你离开的那一年...我每天都在恢复训练，就为了实现承诺。");
+                    setTimeout(() => {
+                        showDialog("李国良", "当你终于回到学校，我激动地去找你，却发现你...完全不记得我。医生说你的记忆可能需要时间，或者特定刺激才能恢复。");
+                        setTimeout(() => {
+                            showDialog("李国良", "我不想强迫你想起痛苦的事，所以决定等你自己恢复记忆。");
+                            setTimeout(() => {
+                                characterImage.src = characters.natsu;
+                                showDialog("结城夏奈", "痛苦的事？什么意思？");
+                                setTimeout(() => {
+                                    characterImage.src = characters.guoliang;
+                                    showDialog("李国良", "（犹豫）你知道我的膝伤是怎么来的，但你不知道后来发生了什么。");
+                                    setTimeout(() => {
+                                        showDialog("李国良", "你因为自责过度，在医院楼梯上摔倒，头部受伤。那次事故让你失去了部分记忆，尤其是和我...和那段痛苦经历相关的部分。");
+                                        setTimeout(() => {
+                                            showDialog("李国良", "你的父母决定让你转学一年，希望环境改变能帮助恢复。");
+                                            setTimeout(() => {
+                                                if (!gameState.memoryFragments.includes('fragment12')) {
+                                                    gameState.memoryFragments.push('fragment12');
+                                                }
+                                                characterImage.src = characters.natsu;
+                                                showDialog("结城夏奈", "所以...我忘记了我们的关系，是因为那次事故？");
+                                                setTimeout(() => {
+                                                    characterImage.src = characters.guoliang;
+                                                    showDialog("李国良", "（点头）是的。我本想给你时间，没想到你又开始接近我，就像命运的安排一样。");
+                                                    setTimeout(() => {
+                                                        showDialog("李国良", "我一直在等待一个合适的时机告诉你真相。");
+                                                        setTimeout(() => {
+                                                            characterImage.src = characters.natsu;
+                                                            showDialog("结城夏奈", "那个约定...你在医院说的那个条件是什么？");
+                                                            setTimeout(() => {
+                                                                characterImage.src = characters.guoliang;
+                                                                showDialog("李国良", "（微笑）我说，'如果我成为教练，你就答应做我的女朋友'。");
+                                                                setTimeout(() => {
+                                                                    characterImage.src = characters.natsu;
+                                                                    showDialog("结城夏奈", "（眼泪涌出）天啊...我居然忘记了这么重要的事...");
+                                                                    setTimeout(() => {
+                                                                        gameState.flags.truthRevealed = true;
+                                                                        gameState.affection = 95; // 真相揭露，好感度大幅提升
+                                                                        gameState.relationshipStatus = "恋人";
+                                                                        updateStatsDisplay();
+                                                                        showDialog("系统", "真相终于揭露，你和李国良重新确认了感情。全部记忆碎片已收集，游戏主线完成！");
+                                                                        unlockAchievement("真爱永恒", "揭开了与李国良之间的全部真相");
+                                                                    }, 2000);
+                                                                }, 2000);
+                                                            }, 2000);
+                                                        }, 2000);
+                                                    }, 2000);
+                                                }, 2000);
+                                            }, 2000);
+                                        }, 2000);
+                                    }, 2000);
+                                }, 2000);
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                }, 2000);
+            }, 2000);
+        }, 2000);
+    }
+};
+        
         // Game initialization
         // 将DOM元素获取移到window.onload内部，并使用JavaScript添加事件监听器
         window.onload = function() {
@@ -2795,9 +3297,50 @@
             }
         }
 
+// 更新剧情检查函数，加入新的剧情触发条件
+function updateStoryChecks() {
+    // 添加到checkStoryProgression函数中
+    
+    // 学生教练日常 - 中度好感度时随机触发
+    if (gameState.day >= 5 && gameState.affection >= 25 && !gameState.flags.seenStudentCoachDaily && Math.random() < 0.4) {
+        setTimeout(() => {
+            gameState.flags.seenStudentCoachDaily = true;
+            newScenes.student_coach_practice();
+        }, 1500);
+    }
+    
+    // 记忆恢复关键剧情 - 需要足够的记忆碎片和好感度
+    if (gameState.flags.memoryTrigger && !gameState.flags.rememberedFirstMeeting && gameState.affection >= 70) {
+        setTimeout(() => {
+            newScenes.classroom_first_meeting();
+        }, 1500);
+    }
+    
+    if (gameState.flags.rememberedFirstMeeting && !gameState.flags.rememberedInjury && gameState.affection >= 75) {
+        setTimeout(() => {
+            newScenes.knee_injury_accident();
+        }, 1500);
+    }
+    
+    if (gameState.flags.rememberedInjury && !gameState.flags.rememberedPromise && gameState.affection >= 80) {
+        setTimeout(() => {
+            newScenes.hospital_promise();
+        }, 1500);
+    }
+    
+    // 真相揭露 - 主线剧情高潮
+    if (gameState.flags.rememberedPromise && !gameState.flags.truthRevealed && gameState.affection >= 85 && gameState.memoryFragments.length >= 10) {
+        setTimeout(() => {
+            newScenes.truth_revelation();
+        }, 1500);
+    }
+}
+                    
         // Check for story progression based on game state
         function checkStoryProgression() {
             // Unlock memory hints after day 5 and good affection
+
+            updateStoryChecks();
             if (gameState.day >= 5 && gameState.affection >= 30 && !gameState.flags.discoveredHint && gameState.memoryFragments.length >= 2) {
                 setTimeout(() => {
                     showSpecialEvent('奇怪的回忆', '深夜，你被一个梦惊醒。梦中的你站在樱花树下，对面是模糊的人影。\n\n"如果我成为教练，你就..."那个熟悉的声音说道。\n\n这不仅仅是梦，而是被尘封的记忆在试图浮出水面。你和李国良的过去，似乎比你记忆中的要复杂得多...');
@@ -3120,6 +3663,31 @@
             }
         }
 
+function updateLocationEvents() {
+    // 篮球场事件更新
+    const updatedBasketballCourtEvents = [
+        "你来到篮球场，李国良正在指导学生训练。虽然他只比其他队员大一岁，但他的专业指导让所有人都心服口服。",
+        "篮球场上，李国良一边协助训练，一边查看课本笔记。他似乎在尝试平衡教练工作和学业。",
+        "李国良正和几个球员讨论战术。你注意到即使在课业繁重的情况下，他对篮球的热情依然不减。"
+    ];
+    
+    // 教室事件更新
+    const updatedClassroomEvents = [
+        "你在教室里看到李国良也选了这门课。他坐在角落认真记笔记，偶尔皱眉思考。",
+        "下课后，李国良和教授讨论体育相关的法律问题。他似乎正将所学知识应用到篮球队管理中。",
+        "李国良在课堂上回答问题，他的专业见解令教授刮目相看。这与球场上严厉的形象形成了有趣对比。"
+    ];
+    
+    // 图书馆事件更新
+    const updatedLibraryEvents = [
+        "你在图书馆看到李国良正埋头于一堆体育管理和战术分析的书籍中。他的学习态度与训练时一样专注。",
+        "李国良坐在图书馆角落，一边翻阅体育医学书籍，一边按摩自己的膝盖。他似乎仍在关注自己的伤势。",
+        "你注意到李国良和几个学生在讨论课题。他不仅是球队的教练，也是一个认真的学生。"
+    ];
+    
+    // 这些更新后的事件可以替换或补充原有事件
+}
+                        
         // Get location name
         function getLocationName(locationId) {
             const names = {
