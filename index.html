@@ -190,13 +190,16 @@
             font-size: 1.2rem;
             color: #f778ba;
             cursor: pointer;
-            z-index: 5;
+            z-index: 100;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
             border: 1px solid #30363d;
+            padding: 10px;
+            margin: -10px;
         }
         
         #menu-button:active {
             transform: scale(0.95);
+            background-color: rgba(30, 37, 58, 0.9);
         }
         
         /* Dialogue Box */
@@ -279,6 +282,9 @@
             position: relative;
             color: #e6edf3;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            user-select: none;
+            pointer-events: auto;
         }
         
         .choice-btn:active {
@@ -303,6 +309,13 @@
             font-size: 1.5rem;
             color: #f778ba;
             opacity: 0.8;
+        }
+        
+        /* Description for choice */
+        .choice-desc {
+            font-size: 0.85rem;
+            color: #8b949e;
+            margin-top: 0.3rem;
         }
         
         /* Game Menu */
@@ -724,7 +737,7 @@
         }
         
         /* Memory Log Modal */
-        .memory-log-modal {
+        #memory-log-modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -803,6 +816,10 @@
             padding: 1rem;
             border-radius: 10px;
             border: 1px solid #30363d;
+        }
+        
+        .log-entry.special {
+            border-left: 3px solid #f778ba;
         }
         
         .log-heading {
@@ -1021,6 +1038,20 @@
 
         .highlight {
             animation: highlight 2s ease-in-out;
+        }
+        
+        /* Emergency Recovery Button */
+        #recovery-button {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            z-index: 999;
+            padding: 5px 10px;
+            background-color: #f778ba;
+            color: #0d1117;
+            border: none;
+            border-radius: 5px;
+            display: none;
         }
     </style>
 </head>
@@ -1259,7 +1290,7 @@
         </div>
         
         <!-- Memory Detail Modal -->
-        <div class="memory-log-modal" id="memory-log-modal">
+        <div id="memory-log-modal">
             <div class="memory-log-content">
                 <div class="memory-log-close">✕</div>
                 <h3 class="memory-log-title" id="memory-log-modal-title">记忆碎片：初次相遇</h3>
@@ -1281,12 +1312,13 @@
 
         <!-- Scene Transition Effect -->
         <div class="scene-transition"></div>
+        
+        <!-- Emergency Recovery Button -->
+        <button id="recovery-button">恢复游戏</button>
     </div>
 
     <script>
         // 游戏数据
-        let typewriterTimerId = null;
-        let currentDialogClickHandler = null;
         let gameData = {
             player: {
                 name: "结城夏奈",
@@ -1581,8 +1613,7 @@
                         return firstMeetingEvent();
                     } else {
                         return {
-                            dialogue: [
-                                {speaker: "系统", text: "你观看了篮球队的训练，对篮球有了更多了解。"},
+                            dialogue: [{speaker: "系统", text: "你观看了篮球队的训练，对篮球有了更多了解。"},
                                 {speaker: "夏奈", text: "他们训练得真认真，特别是李国良教练，指导得很专业。"}
                             ],
                             choices: []
@@ -3819,7 +3850,6 @@
         
         // 添加物品到背包
         function addToInventory(itemId) {
-            
             gameData.player.inventory.push(itemId);
             showNotification("获得物品：" + itemsData[itemId].name);
             updateInventoryDisplay();
@@ -3833,7 +3863,6 @@
         
         // 使用物品
         function useItem(itemId) {
-            
             const item = itemsData[itemId];
             const index = gameData.player.inventory.indexOf(itemId);
             
@@ -3865,7 +3894,6 @@
         
         // 收集记忆碎片
         function collectMemoryFragment(fragmentId) {
-            
             if (!hasMemoryFragment(fragmentId)) {
                 gameData.player.memoryFragments.push(fragmentId);
                 updateStatusDisplay();
@@ -3917,7 +3945,6 @@
         
         // 检查事件条件
         function checkEventRequirements(event) {
-            
             if (!event.requirements) {
                 return true;
             }
@@ -3945,7 +3972,6 @@
         
         // 添加到游戏日志
         function addToLog(category, text) {
-            
             const timeString = getTimeString();
             gameData.gameState.gameLog.unshift({
                 time: timeString,
@@ -3961,7 +3987,7 @@
             updateLogDisplay();
             
             // 高亮提示日志按钮
-            if (category === "剧情" || category === "记忆") {
+            if (category === "剧情" || category === "记忆" || category === "特殊互动") {
                 document.getElementById("log-btn").classList.add("highlight");
                 setTimeout(() => {
                     document.getElementById("log-btn").classList.remove("highlight");
@@ -3971,7 +3997,6 @@
         
         // 获取时间字符串
         function getTimeString() {
-            
             const dayText = "第" + gameData.gameState.day + "天";
             let timeText = "";
             switch (gameData.gameState.time) {
@@ -3990,7 +4015,6 @@
         
         // 更新游戏时间
         function advanceTime() {
-            
             const times = ["morning", "afternoon", "evening"];
             const currentTimeIndex = times.indexOf(gameData.gameState.time);
             
@@ -4024,7 +4048,6 @@
         
         // 消耗能量
         function consumeEnergy(amount) {
-            
             gameData.gameState.energyLeft -= amount;
             if (gameData.gameState.energyLeft < 0) {
                 gameData.gameState.energyLeft = 0;
@@ -4034,7 +4057,6 @@
         
         // 触发随机事件
         function triggerRandomEvent() {
-            
             // 50%概率触发随机事件
             if (Math.random() > 0.5) {
                 return;
@@ -4107,7 +4129,6 @@
         
         // 显示通知
         function showNotification(message) {
-            
             const notification = document.getElementById("notification");
             notification.textContent = message;
             notification.style.opacity = "1";
@@ -4121,7 +4142,6 @@
         
         // 更新状态显示
         function updateStatusDisplay() {
-            
             document.getElementById("date-display").textContent = "第" + gameData.gameState.day + "天";
             
             let timeText = "";
@@ -4169,7 +4189,6 @@
         
         // 更新进度指示器
         function updateProgressIndicator() {
-            
             const dots = document.querySelectorAll('.progress-indicator-dot');
             dots.forEach(dot => dot.classList.remove('active'));
             
@@ -4187,7 +4206,6 @@
         
         // 更新物品栏显示
         function updateInventoryDisplay() {
-            
             const inventoryGrid = document.getElementById("inventory-grid");
             inventoryGrid.innerHTML = "";
             
@@ -4229,7 +4247,6 @@
         
         // 显示物品详情
         function showItemDetail(itemId) {
-            
             const item = itemsData[itemId];
             document.getElementById("item-detail-icon").textContent = item.icon;
             document.getElementById("item-detail-name").textContent = item.name;
@@ -4252,7 +4269,6 @@
         
         // 更新记忆碎片显示
         function updateMemoryLogDisplay() {
-            
             const memoryLogGrid = document.getElementById("memory-log-grid");
             memoryLogGrid.innerHTML = "";
             
@@ -4287,7 +4303,6 @@
         
         // 显示记忆详情
         function showMemoryDetail(fragmentId) {
-            
             const fragment = memoryFragmentsData[fragmentId];
             document.getElementById("memory-log-modal-title").textContent = fragment.title;
             document.getElementById("memory-log-modal-text").textContent = fragment.content;
@@ -4303,7 +4318,6 @@
         
         // 更新日志显示
         function updateLogDisplay() {
-            
             const logContainer = document.getElementById("log-container");
             logContainer.innerHTML = "";
             
@@ -4323,7 +4337,7 @@
                 
                 // 特殊样式处理
                 if (log.category === "剧情" || log.category === "记忆" || log.category === "特殊互动") {
-                    logEntry.style.borderLeft = "3px solid #f778ba";
+                    logEntry.classList.add("special");
                 }
                 
                 const logHeading = document.createElement("div");
@@ -4343,7 +4357,6 @@
         
         // 显示/隐藏屏幕
         function showScreen(screenId) {
-            
             const screen = document.getElementById(screenId);
             
             if (screenId === "title-screen") {
@@ -4359,7 +4372,6 @@
         }
         
         function hideScreen(screenId) {
-            
             const screen = document.getElementById(screenId);
             screen.style.opacity = "0";
             
@@ -4371,7 +4383,6 @@
         }
         
         function hideAllScreens() {
-            
             const subScreens = document.querySelectorAll(".sub-screen");
             subScreens.forEach(screen => {
                 screen.style.opacity = "0";
@@ -4394,9 +4405,6 @@
         function updateScene(location) {
             const locationData = locationsData[location];
             gameData.gameState.location = location;
-            
-            // 清理任何正在进行的打字效果
-            
             
             // 显示场景过渡效果
             const transition = document.querySelector(".scene-transition");
@@ -4427,15 +4435,11 @@
                 }
             });
             
-            // 清理打字机状态
-            
-            
             addToLog("移动", `你来到了${locationData.name}。`);
         }
         
         // 更新角色显示
         function updateCharacterDisplay() {
-            
             const characterImg = document.getElementById("character-img");
             const location = gameData.gameState.location;
             const character = document.getElementById("character");
@@ -4456,14 +4460,14 @@
             
             // 在特定地点可能显示李国良
             if (location === "basketball-court" && (Math.random() > 0.5 || gameData.gameState.storyFlag >= 1)) {
-                characterImg.src = "https://pic1.imgdb.cn/item/66e83fc7d9c307b7e9977edb.png";  // 李国良形象
+                characterImg.src = "https://pic1.imgdb.cn/item/66be21a1d9c307b7e9cc9c98.jpg";  // 李国良形象
                 characterImg.alt = "李国良";
                 characterImg.style.display = "block";
             }
             
             // 在健身房可能显示美咲
             if (location === "gym" && gameData.characters.misaki.metFlag && Math.random() > 0.7) {
-                characterImg.src = "https://pic1.imgdb.cn/item/66e83fc7d9c307b7e9977edd.png";  // 美咲形象
+                characterImg.src = "https://pic1.imgdb.cn/item/66d7f116d9c307b7e9a009b9.jpg";  // 美咲形象
                 characterImg.alt = "相泽美咲";
                 characterImg.style.display = "block";
             }
@@ -4477,6 +4481,8 @@
         }
         
         // 处理对话和选项显示
+        let currentDialogClickHandler = null;
+        
         function processEvent(event) {
             const dialogueBox = document.getElementById("dialogue-box");
             const dialogueText = document.getElementById("dialogue-text");
@@ -4487,12 +4493,6 @@
             if (!event || !event.dialogue || event.dialogue.length === 0) {
                 console.warn("处理了一个空事件或没有对话的事件");
                 return;
-            }
-            
-            // 清除任何现有的打字机计时器
-            if (typewriterTimerId !== null) {
-                clearTimeout(typewriterTimerId);
-                typewriterTimerId = null;
             }
             
             // 如果存在旧的点击处理器，先移除它
@@ -4511,7 +4511,6 @@
             
             // 直接显示文本，不使用打字机效果
             dialogueText.textContent = firstDialogue.text;
-            dialogueText.dataset.isTyping = "false";
             
             // 保存当前事件数据
             dialogueBox.dataset.currentDialogueIndex = "0";
@@ -4560,7 +4559,7 @@
                                 // 如果没有选择，自动显示当前位置可用事件
                                 updateLocationEvents();
                             }
-                        }, 3000); // 延长到3秒
+                        }, 3000);
                     }
                 };
                 
@@ -4577,34 +4576,7 @@
                         // 如果没有选择，自动显示当前位置可用事件
                         updateLocationEvents();
                     }
-                }, 3000); // 延长到3秒，给用户更多阅读时间
-            }
-        }
-
-
-        function cleanupTypewriter() {
-            // 虽然不再使用打字机效果，但保留此函数用于清理
-            if (typewriterTimerId !== null) {
-                clearTimeout(typewriterTimerId);
-                typewriterTimerId = null;
-            }
-            
-            const dialogueText = document.getElementById("dialogue-text");
-            if (dialogueText) {
-                dialogueText.dataset.isTyping = "false";
-            }
-        }
-        
-        // 修改打字机效果函数，修复无限触发问题
-        function typeWriter(element, text, index, speed) {
-            // 直接显示完整文本，不使用动画效果
-            element.textContent = text;
-            element.dataset.isTyping = "false";
-            
-            // 清除任何可能存在的计时器
-            if (typewriterTimerId !== null) {
-                clearTimeout(typewriterTimerId);
-                typewriterTimerId = null;
+                }, 3000);
             }
         }
         
@@ -4614,30 +4586,19 @@
             choicesContainer.innerHTML = "";
             
             if (!choices || choices.length === 0) {
-                console.warn("尝试显示空选项");
                 return;
             }
-            
-            console.log("显示选项:", choices.length);
             
             choices.forEach(function(choice, index) {
                 const choiceBtn = document.createElement("div");
                 choiceBtn.className = "choice-btn";
                 choiceBtn.textContent = choice.text;
                 
-                // 增强按钮样式和交互性
-                choiceBtn.style.cursor = "pointer";
-                choiceBtn.style.pointerEvents = "auto";
-                choiceBtn.style.userSelect = "none";
-                choiceBtn.style.position = "relative";
-                choiceBtn.style.zIndex = "10"; // 确保在其他元素之上
-                
                 // 添加淡入动画
                 choiceBtn.style.opacity = "0";
                 choiceBtn.style.transform = "translateY(10px)";
                 
                 // 添加点击和触摸事件
-                // 修改displayChoices函数中的事件处理部分
                 const handleClick = function(e) {
                     e.stopPropagation(); // 阻止事件冒泡
                     
@@ -4676,34 +4637,6 @@
                 
                 choiceBtn.addEventListener('click', handleClick);
                 
-                // 绑定多种事件以确保在各种设备上工作
-                choiceBtn.addEventListener('click', handleClick);
-                choiceBtn.addEventListener('touchstart', function(e) {
-                    e.preventDefault(); // 阻止默认行为
-                    this.style.transform = "translateY(2px)";
-                    this.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.2)";
-                    this.style.backgroundColor = "#30363d";
-                });
-                
-                choiceBtn.addEventListener('touchend', function(e) {
-                    e.preventDefault(); // 阻止默认行为
-                    this.style.transform = "translateY(0)";
-                    this.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.2)";
-                    this.style.backgroundColor = "#21262d";
-                    
-                    if (choice.action) {
-                        try {
-                            const result = choice.action();
-                            if (result) {
-                                processEvent(result);
-                            }
-                        } catch (err) {
-                            console.error("选项执行错误:", err);
-                            showNotification("操作执行错误，请尝试其他选项");
-                        }
-                    }
-                });
-                
                 choicesContainer.appendChild(choiceBtn);
                 
                 // 错开淡入时间
@@ -4713,15 +4646,13 @@
                 }, 100 * index);
             });
         }
-
         
         // 执行当前地点的可用事件
         function executeLocationEvent(eventName) {
-            
             const location = gameData.gameState.location;
             const event = eventsData[eventName];
-
-            // 检查事件是否存在和是否可用
+            
+            // 检查事件是否存在
             if (!event) return;
             
             // 判断这个事件是否会减少体力
@@ -4730,11 +4661,6 @@
             // 如果会减少体力，检查当前体力是否足够
             if (eventReducesStamina && gameData.player.attributes.stamina <= 10) {
                 showNotification("体力不足，请先休息恢复体力");
-                return;
-            }
-            
-            // 检查事件是否存在和是否可用
-            if (!event) {
                 return;
             }
             
@@ -4773,18 +4699,17 @@
                 // 给玩家额外的时间阅读结果，再推进时间
                 setTimeout(() => {
                     advanceTime();
-                }, 3000); // 延长到3秒
+                }, 3000);
             } else {
                 // 如果没有结果文本，延迟一下再推进时间
                 setTimeout(() => {
                     advanceTime();
-                }, 1500); // 即使没有文本也给1.5秒的缓冲
+                }, 3000);
             }
         }
         
         // 更新地点可用事件
         function updateLocationEvents() {
-            
             const location = gameData.gameState.location;
             const locationData = locationsData[location];
             
@@ -4820,19 +4745,10 @@
                 choiceBtn.className = "choice-btn";
                 choiceBtn.textContent = event.name + " (消耗精力: " + event.energyCost + ")";
                 
-                // 增强按钮样式和交互性
-                choiceBtn.style.cursor = "pointer";
-                choiceBtn.style.pointerEvents = "auto";
-                choiceBtn.style.userSelect = "none";
-                choiceBtn.style.position = "relative";
-                choiceBtn.style.zIndex = "10"; // 确保在其他元素之上
-                
                 // 添加事件描述
                 if (event.description) {
                     const descriptionSpan = document.createElement("div");
-                    descriptionSpan.style.fontSize = "0.85rem";
-                    descriptionSpan.style.color = "#8b949e";
-                    descriptionSpan.style.marginTop = "0.3rem";
+                    descriptionSpan.className = "choice-desc";
                     descriptionSpan.textContent = event.description;
                     choiceBtn.appendChild(descriptionSpan);
                 }
@@ -4842,8 +4758,8 @@
                     choiceBtn.classList.add("disabled");
                     choiceBtn.title = "精力不足";
                 } else {
-                    // 添加点击和触摸事件
-                    const handleExecuteEvent = function() {
+                    // 添加点击事件
+                    choiceBtn.addEventListener('click', function() {
                         // 视觉反馈
                         if (!choiceBtn.classList.contains("disabled")) {
                             choiceBtn.style.transform = "translateY(2px)";
@@ -4857,26 +4773,6 @@
                                 choiceBtn.style.backgroundColor = "#21262d";
                                 executeLocationEvent(eventName);
                             }, 100);
-                        }
-                    };
-                    
-                    choiceBtn.addEventListener('click', handleExecuteEvent);
-                    choiceBtn.addEventListener('touchstart', function(e) {
-                        if (!choiceBtn.classList.contains("disabled")) {
-                            e.preventDefault();
-                            choiceBtn.style.transform = "translateY(2px)";
-                            choiceBtn.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.2)";
-                            choiceBtn.style.backgroundColor = "#30363d";
-                        }
-                    });
-                    
-                    choiceBtn.addEventListener('touchend', function(e) {
-                        if (!choiceBtn.classList.contains("disabled")) {
-                            e.preventDefault();
-                            choiceBtn.style.transform = "translateY(0)";
-                            choiceBtn.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.2)";
-                            choiceBtn.style.backgroundColor = "#21262d";
-                            executeLocationEvent(eventName);
                         }
                     });
                 }
@@ -4922,104 +4818,31 @@
                 return false;
             }
         }
-
-        function enhanceMenuButton() {
-            const menuButton = document.getElementById("menu-button");
-            
-            // 确保菜单按钮在最上层
-            menuButton.style.zIndex = "100";
-            
-            // 增大点击区域
-            menuButton.style.padding = "10px";
-            menuButton.style.margin = "-10px";
-            
-            // 添加明显的点击视觉反馈
-            menuButton.addEventListener('mousedown', function() {
-                this.style.transform = "scale(0.95)";
-                this.style.backgroundColor = "rgba(30, 37, 58, 0.9)";
-            });
-            
-            menuButton.addEventListener('mouseup', function() {
-                this.style.transform = "scale(1)";
-                this.style.backgroundColor = "rgba(13, 17, 23, 0.8)";
-            });
-            
-            // 确保点击事件正确绑定
-            menuButton.onclick = function(e) {
-                e.stopPropagation(); // 防止事件冒泡
-                document.getElementById("game-menu").style.opacity = "1";
-                document.getElementById("game-menu").style.visibility = "visible";
-                console.log("菜单按钮被点击");
-            };
-            
-            // 添加触摸事件支持
-            menuButton.addEventListener('touchstart', function(e) {
-                e.preventDefault(); // 阻止默认行为
-                this.style.transform = "scale(0.95)";
-                this.style.backgroundColor = "rgba(30, 37, 58, 0.9)";
-            });
-            
-            menuButton.addEventListener('touchend', function(e) {
-                e.preventDefault(); // 阻止默认行为
-                this.style.transform = "scale(1)";
-                this.style.backgroundColor = "rgba(13, 17, 23, 0.8)";
-                document.getElementById("game-menu").style.opacity = "1";
-                document.getElementById("game-menu").style.visibility = "visible";
-                console.log("菜单按钮被触摸点击");
-            });
-        }
-
-
+        
+        // 添加紧急恢复功能
         function addDebugRecoveryFeatures() {
-            // 创建紧急恢复按钮 - 在游戏卡住时可以使用
-            const recoveryButton = document.createElement("button");
-            recoveryButton.textContent = "恢复游戏";
-            recoveryButton.style.position = "fixed";
-            recoveryButton.style.bottom = "10px";
-            recoveryButton.style.right = "10px";
-            recoveryButton.style.zIndex = "999";
-            recoveryButton.style.padding = "5px 10px";
-            recoveryButton.style.backgroundColor = "#f778ba";
-            recoveryButton.style.color = "#0d1117";
-            recoveryButton.style.border = "none";
-            recoveryButton.style.borderRadius = "5px";
-            recoveryButton.style.display = "none"; // 默认隐藏
-            
-            // 双击空白处显示恢复按钮
+            // 双击显示恢复按钮
             let lastClick = 0;
             document.addEventListener('click', function(e) {
                 const now = new Date().getTime();
                 if (now - lastClick < 300) {
-                    recoveryButton.style.display = "block";
+                    document.getElementById("recovery-button").style.display = "block";
                     setTimeout(() => {
-                        recoveryButton.style.display = "none";
+                        document.getElementById("recovery-button").style.display = "none";
                     }, 5000);
                 }
                 lastClick = now;
             });
             
-            recoveryButton.onclick = function() {
-                // 尝试恢复游戏状态
+            // 恢复按钮点击事件
+            document.getElementById("recovery-button").addEventListener("click", function() {
                 updateLocationEvents();
                 showNotification("已尝试恢复游戏状态");
                 this.style.display = "none";
-            };
-            
-            document.body.appendChild(recoveryButton);
+            });
         }
         
-        // 在页面加载完成后调用这个函数
-        document.addEventListener('DOMContentLoaded', function() {
-            addDebugRecoveryFeatures();
-        });        
-
-        window.onerror = function(message, source, lineno, colno, error) {
-            console.error("游戏错误:", message, "at", source, ":", lineno, ":", colno);
-            showNotification("游戏出现错误，请刷新页面");
-            return true;
-        };
-        
-        // 2. 保证游戏状态一致性的函数
+        // 确保游戏状态一致性
         function ensureGameConsistency() {
             // 确保游戏状态一致
             if (!gameData.gameState.location) {
@@ -5036,17 +4859,87 @@
             updateStatusDisplay();
         }
         
-        // 在游戏初始化和每次行动后调用此函数
-        function safeExecuteAction(action) {
-            try {
-                // 执行动作
-                action();
-                // 确保游戏状态一致
-                ensureGameConsistency();
-            } catch (e) {
-                console.error("执行动作时出错:", e);
-                showNotification("操作失败，请尝试其他选项");
-            }
+        // 绑定菜单和UI事件
+        function bindUIEvents() {
+            // 菜单按钮
+            document.getElementById("menu-button").addEventListener("click", function(e) {
+                e.stopPropagation();
+                document.getElementById("game-menu").style.opacity = "1";
+                document.getElementById("game-menu").style.visibility = "visible";
+            });
+            
+            // 菜单项
+            document.getElementById("close-menu-btn").addEventListener("click", function() {
+                hideScreen("game-menu");
+            });
+            
+            document.getElementById("inventory-btn").addEventListener("click", function() {
+                hideScreen("game-menu");
+                showScreen("inventory-screen");
+                updateInventoryDisplay();
+            });
+            
+            document.getElementById("map-btn").addEventListener("click", function() {
+                hideScreen("game-menu");
+                showScreen("map-screen");
+            });
+            
+            document.getElementById("status-btn").addEventListener("click", function() {
+                hideScreen("game-menu");
+                showScreen("status-screen");
+            });
+            
+            document.getElementById("memory-btn").addEventListener("click", function() {
+                hideScreen("game-menu");
+                showScreen("memory-log-screen");
+                updateMemoryLogDisplay();
+            });
+            
+            document.getElementById("log-btn").addEventListener("click", function() {
+                hideScreen("game-menu");
+                showScreen("log-screen");
+                updateLogDisplay();
+            });
+            
+            document.getElementById("save-btn").addEventListener("click", function() {
+                saveGame();
+                hideScreen("game-menu");
+            });
+            
+            // 返回按钮
+            const backButtons = document.querySelectorAll(".back-btn");
+            backButtons.forEach(function(btn) {
+                btn.addEventListener("click", function() {
+                    hideAllScreens();
+                });
+            });
+            
+            // 地点选择
+            const locationItems = document.querySelectorAll(".location-item");
+            locationItems.forEach(function(item) {
+                item.addEventListener("click", function() {
+                    const locationId = this.dataset.location;
+                    updateScene(locationId);
+                    hideScreen("map-screen");
+                });
+            });
+            
+            // 记忆碎片确认按钮
+            document.getElementById("continue-btn").addEventListener("click", function() {
+                hideScreen("memory-collected");
+            });
+            
+            // 取消物品按钮
+            document.getElementById("cancel-item-btn").addEventListener("click", function() {
+                document.getElementById("item-detail-modal").style.opacity = "0";
+                document.getElementById("item-detail-modal").style.visibility = "hidden";
+            });
+            
+            // 关闭记忆详情
+            document.querySelector(".memory-log-close").addEventListener("click", function() {
+                document.getElementById("memory-log-modal").style.opacity = "0";
+                document.getElementById("memory-log-modal").style.visibility = "hidden";
+            });
         }
         
         // 初始化游戏
@@ -5065,19 +4958,11 @@
             updateMemoryLogDisplay();
             updateLogDisplay();
             
-            // 增强菜单按钮
-            enhanceMenuButton();
+            // 绑定UI事件
+            bindUIEvents();
             
-            // 确保清理打字机状态
-            
-            
-            // 确保初始场景有选项可选
-            setTimeout(function() {
-                if (document.getElementById("choices-container").children.length === 0) {
-                    console.log("检测到没有选项，尝试更新位置事件");
-                    updateLocationEvents();
-                }
-            }, 3000);
+            // 添加紧急恢复功能
+            addDebugRecoveryFeatures();
             
             // 标题界面按钮
             document.getElementById("start-btn").addEventListener("click", function() {
@@ -5132,78 +5017,6 @@
                 }, 5000);
             });
             
-            // 菜单按钮
-            document.getElementById("menu-button").addEventListener("click", function() {
-                document.getElementById("game-menu").style.opacity = "1";
-                document.getElementById("game-menu").style.visibility = "visible";
-            });
-            
-            document.getElementById("close-menu-btn").addEventListener("click", function() {
-                hideScreen("game-menu");
-            });
-            
-            document.getElementById("inventory-btn").addEventListener("click", function() {
-                hideScreen("game-menu");
-                showScreen("inventory-screen");
-                updateInventoryDisplay();
-            });
-            
-            document.getElementById("map-btn").addEventListener("click", function() {
-                hideScreen("game-menu");
-                showScreen("map-screen");
-            });
-            
-            document.getElementById("status-btn").addEventListener("click", function() {
-                hideScreen("game-menu");
-                showScreen("status-screen");
-            });
-            
-            document.getElementById("memory-btn").addEventListener("click", function() {
-                hideScreen("game-menu");
-                showScreen("memory-log-screen");
-                updateMemoryLogDisplay();
-            });
-            
-            document.getElementById("log-btn").addEventListener("click", function() {
-                hideScreen("game-menu");
-                showScreen("log-screen");
-                updateLogDisplay();
-            });
-            
-            document.getElementById("save-btn").addEventListener("click", function() {
-                // 保存游戏
-                saveGame();
-                hideScreen("game-menu");
-            });
-            
-            // 返回按钮
-            const backButtons = document.querySelectorAll(".back-btn");
-            backButtons.forEach(function(btn) {
-                btn.addEventListener("click", function() {
-                    hideAllScreens();
-                });
-            });
-            
-            // 地点选择
-            const locationItems = document.querySelectorAll(".location-item");
-            locationItems.forEach(function(item) {
-                item.addEventListener("click", function() {
-                    const locationId = this.dataset.location;
-                    
-                    // 切换到选择的地点
-                    updateScene(locationId);
-                    hideScreen("map-screen");
-                    
-                    // 更新地点选项
-                    updateLocationEvents();
-                });
-            });
-            
-            // 记忆碎片确认按钮
-            document.getElementById("continue-btn").addEventListener("click", function() {
-                hideScreen("memory-collected");
-            });
-            
             // 防止触摸事件导致缩放
             document.addEventListener('touchmove', function(event) {
                 if (event.scale !== 1) { 
@@ -5222,8 +5035,8 @@
             }, false);
         }
         
-        // 启动游戏
+        // 监听页面加载
         document.addEventListener("DOMContentLoaded", initGame);
     </script>
-</body>
-</html>
+    </body>
+    </html>
