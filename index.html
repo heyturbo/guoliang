@@ -4423,8 +4423,8 @@
                 // 确保始终更新位置事件和选项
                 setTimeout(() => {
                     updateLocationEvents();
-                }, 300);
-            }, 500);
+                }, 3000);
+            }, 1000);
             
             // 更新地图中当前位置的高亮
             document.querySelectorAll(".location-item").forEach(function(item) {
@@ -4479,6 +4479,13 @@
                 character.style.bottom = "10px";
             }
         }
+        
+        // 延时配置（单位：毫秒）
+        const TIMING = {
+            DIALOGUE_TRANSITION: 5000,   // 对话切换到选项显示的延时
+            TIME_ADVANCEMENT: 3000,      // 推进游戏时间的延时
+            BUTTON_ANIMATION: 100        // 按钮动画效果延时
+        };
         
         // 处理对话和选项显示
         let currentDialogClickHandler = null;
@@ -4559,7 +4566,7 @@
                                 // 如果没有选择，自动显示当前位置可用事件
                                 updateLocationEvents();
                             }
-                        }, 3000);
+                        }, TIMING.DIALOGUE_TRANSITION);
                     }
                 };
                 
@@ -4576,7 +4583,7 @@
                         // 如果没有选择，自动显示当前位置可用事件
                         updateLocationEvents();
                     }
-                }, 3000);
+                }, TIMING.DIALOGUE_TRANSITION);
             }
         }
         
@@ -4632,7 +4639,7 @@
                         setTimeout(() => {
                             this.dataset.processing = "false";
                         }, 500);
-                    }, 100);
+                    }, TIMING.BUTTON_ANIMATION);
                 };
                 
                 choiceBtn.addEventListener('click', handleClick);
@@ -4643,7 +4650,7 @@
                 setTimeout(() => {
                     choiceBtn.style.opacity = "1";
                     choiceBtn.style.transform = "translateY(0)";
-                }, 100 * index);
+                }, TIMING.BUTTON_ANIMATION * index);
             });
         }
         
@@ -4699,12 +4706,12 @@
                 // 给玩家额外的时间阅读结果，再推进时间
                 setTimeout(() => {
                     advanceTime();
-                }, 3000);
+                }, TIMING.TIME_ADVANCEMENT);
             } else {
                 // 如果没有结果文本，延迟一下再推进时间
                 setTimeout(() => {
                     advanceTime();
-                }, 3000);
+                }, TIMING.TIME_ADVANCEMENT);
             }
         }
         
@@ -4772,7 +4779,7 @@
                                 choiceBtn.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.2)";
                                 choiceBtn.style.backgroundColor = "#21262d";
                                 executeLocationEvent(eventName);
-                            }, 100);
+                            }, TIMING.BUTTON_ANIMATION);
                         }
                     });
                 }
@@ -4984,6 +4991,7 @@
                             action: function() {
                                 updateScene("apartment");
                                 updateLocationEvents();
+                                
                                 addToLog("系统", "游戏开始！希望你能揭开过去的谜团，追寻真爱。");
                                 
                                 return {
