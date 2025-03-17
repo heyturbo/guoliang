@@ -1285,6 +1285,8 @@
 
     <script>
         // 游戏数据
+        let typewriterTimerId = null;
+        let currentDialogClickHandler = null;
         let gameData = {
             player: {
                 name: "结城夏奈",
@@ -3817,6 +3819,7 @@
         
         // 添加物品到背包
         function addToInventory(itemId) {
+            
             gameData.player.inventory.push(itemId);
             showNotification("获得物品：" + itemsData[itemId].name);
             updateInventoryDisplay();
@@ -3830,6 +3833,7 @@
         
         // 使用物品
         function useItem(itemId) {
+            
             const item = itemsData[itemId];
             const index = gameData.player.inventory.indexOf(itemId);
             
@@ -3861,6 +3865,7 @@
         
         // 收集记忆碎片
         function collectMemoryFragment(fragmentId) {
+            
             if (!hasMemoryFragment(fragmentId)) {
                 gameData.player.memoryFragments.push(fragmentId);
                 updateStatusDisplay();
@@ -3912,6 +3917,7 @@
         
         // 检查事件条件
         function checkEventRequirements(event) {
+            
             if (!event.requirements) {
                 return true;
             }
@@ -3939,6 +3945,7 @@
         
         // 添加到游戏日志
         function addToLog(category, text) {
+            
             const timeString = getTimeString();
             gameData.gameState.gameLog.unshift({
                 time: timeString,
@@ -3964,6 +3971,7 @@
         
         // 获取时间字符串
         function getTimeString() {
+            
             const dayText = "第" + gameData.gameState.day + "天";
             let timeText = "";
             switch (gameData.gameState.time) {
@@ -3982,6 +3990,7 @@
         
         // 更新游戏时间
         function advanceTime() {
+            
             const times = ["morning", "afternoon", "evening"];
             const currentTimeIndex = times.indexOf(gameData.gameState.time);
             
@@ -4015,6 +4024,7 @@
         
         // 消耗能量
         function consumeEnergy(amount) {
+            
             gameData.gameState.energyLeft -= amount;
             if (gameData.gameState.energyLeft < 0) {
                 gameData.gameState.energyLeft = 0;
@@ -4024,6 +4034,7 @@
         
         // 触发随机事件
         function triggerRandomEvent() {
+            
             // 50%概率触发随机事件
             if (Math.random() > 0.5) {
                 return;
@@ -4096,6 +4107,7 @@
         
         // 显示通知
         function showNotification(message) {
+            
             const notification = document.getElementById("notification");
             notification.textContent = message;
             notification.style.opacity = "1";
@@ -4109,6 +4121,7 @@
         
         // 更新状态显示
         function updateStatusDisplay() {
+            
             document.getElementById("date-display").textContent = "第" + gameData.gameState.day + "天";
             
             let timeText = "";
@@ -4156,6 +4169,7 @@
         
         // 更新进度指示器
         function updateProgressIndicator() {
+            
             const dots = document.querySelectorAll('.progress-indicator-dot');
             dots.forEach(dot => dot.classList.remove('active'));
             
@@ -4173,6 +4187,7 @@
         
         // 更新物品栏显示
         function updateInventoryDisplay() {
+            
             const inventoryGrid = document.getElementById("inventory-grid");
             inventoryGrid.innerHTML = "";
             
@@ -4214,6 +4229,7 @@
         
         // 显示物品详情
         function showItemDetail(itemId) {
+            
             const item = itemsData[itemId];
             document.getElementById("item-detail-icon").textContent = item.icon;
             document.getElementById("item-detail-name").textContent = item.name;
@@ -4236,6 +4252,7 @@
         
         // 更新记忆碎片显示
         function updateMemoryLogDisplay() {
+            
             const memoryLogGrid = document.getElementById("memory-log-grid");
             memoryLogGrid.innerHTML = "";
             
@@ -4270,6 +4287,7 @@
         
         // 显示记忆详情
         function showMemoryDetail(fragmentId) {
+            
             const fragment = memoryFragmentsData[fragmentId];
             document.getElementById("memory-log-modal-title").textContent = fragment.title;
             document.getElementById("memory-log-modal-text").textContent = fragment.content;
@@ -4285,6 +4303,7 @@
         
         // 更新日志显示
         function updateLogDisplay() {
+            
             const logContainer = document.getElementById("log-container");
             logContainer.innerHTML = "";
             
@@ -4324,6 +4343,7 @@
         
         // 显示/隐藏屏幕
         function showScreen(screenId) {
+            
             const screen = document.getElementById(screenId);
             
             if (screenId === "title-screen") {
@@ -4339,6 +4359,7 @@
         }
         
         function hideScreen(screenId) {
+            
             const screen = document.getElementById(screenId);
             screen.style.opacity = "0";
             
@@ -4350,6 +4371,7 @@
         }
         
         function hideAllScreens() {
+            
             const subScreens = document.querySelectorAll(".sub-screen");
             subScreens.forEach(screen => {
                 screen.style.opacity = "0";
@@ -4373,6 +4395,9 @@
             const locationData = locationsData[location];
             gameData.gameState.location = location;
             
+            // 清理任何正在进行的打字效果
+            
+            
             // 显示场景过渡效果
             const transition = document.querySelector(".scene-transition");
             transition.style.opacity = "1";
@@ -4386,6 +4411,11 @@
                 
                 // 淡出过渡效果
                 transition.style.opacity = "0";
+                
+                // 确保始终更新位置事件和选项
+                setTimeout(() => {
+                    updateLocationEvents();
+                }, 300);
             }, 500);
             
             // 更新地图中当前位置的高亮
@@ -4397,11 +4427,15 @@
                 }
             });
             
+            // 清理打字机状态
+            
+            
             addToLog("移动", `你来到了${locationData.name}。`);
         }
         
         // 更新角色显示
         function updateCharacterDisplay() {
+            
             const characterImg = document.getElementById("character-img");
             const location = gameData.gameState.location;
             const character = document.getElementById("character");
@@ -4451,7 +4485,20 @@
             const tapIndicator = document.getElementById("tap-indicator");
             
             if (!event || !event.dialogue || event.dialogue.length === 0) {
+                console.warn("处理了一个空事件或没有对话的事件");
                 return;
+            }
+            
+            // 清除任何现有的打字机计时器
+            if (typewriterTimerId !== null) {
+                clearTimeout(typewriterTimerId);
+                typewriterTimerId = null;
+            }
+            
+            // 如果存在旧的点击处理器，先移除它
+            if (currentDialogClickHandler) {
+                dialogueBox.removeEventListener('click', currentDialogClickHandler);
+                currentDialogClickHandler = null;
             }
             
             // 清空之前的内容
@@ -4462,8 +4509,9 @@
             const firstDialogue = event.dialogue[0];
             speakerName.textContent = firstDialogue.speaker;
             
-            // 添加打字机效果
-            typeWriter(dialogueText, firstDialogue.text, 0, 30);
+            // 直接显示文本，不使用打字机效果
+            dialogueText.textContent = firstDialogue.text;
+            dialogueText.dataset.isTyping = "false";
             
             // 保存当前事件数据
             dialogueBox.dataset.currentDialogueIndex = "0";
@@ -4473,16 +4521,13 @@
             if (event.dialogue.length > 1) {
                 tapIndicator.style.display = "block";
                 
-                dialogueBox.onclick = function(e) {
+                // 确保对话框可以点击
+                dialogueBox.style.pointerEvents = "auto";
+                
+                // 创建新的点击事件处理
+                currentDialogClickHandler = function(e) {
                     // 忽略点击选项按钮的情况
-                    if (e.target.className === "choice-btn" || e.target.closest(".choice-btn")) {
-                        return;
-                    }
-                    
-                    // 如果文字还在打字中，直接显示完整文本
-                    if (dialogueText.dataset.isTyping === "true") {
-                        dialogueText.dataset.isTyping = "false";
-                        dialogueText.textContent = JSON.parse(dialogueBox.dataset.dialogues)[parseInt(dialogueBox.dataset.currentDialogueIndex)].text;
+                    if (e.target.classList.contains("choice-btn") || e.target.closest(".choice-btn")) {
                         return;
                     }
                     
@@ -4496,54 +4541,70 @@
                         const nextDialogue = dialogues[nextIndex];
                         
                         speakerName.textContent = nextDialogue.speaker;
-                        dialogueText.textContent = ""; // 清空对话框
-                        
-                        // 应用打字机效果
-                        typeWriter(dialogueText, nextDialogue.text, 0, 30);
+                        dialogueText.textContent = nextDialogue.text; // 直接显示全文
                         
                         dialogueBox.dataset.currentDialogueIndex = nextIndex;
                     } else {
-                        // 如果是最后一句对话，显示选项
-                        dialogueBox.onclick = null;
+                        // 如果是最后一句对话，延长显示时间后显示选项
+                        if (currentDialogClickHandler) {
+                            dialogueBox.removeEventListener('click', currentDialogClickHandler);
+                            currentDialogClickHandler = null;
+                        }
+                        
                         tapIndicator.style.display = "none";
                         
-                        if (event.choices && event.choices.length > 0) {
-                            displayChoices(event.choices);
-                        }
+                        setTimeout(() => {
+                            if (event.choices && event.choices.length > 0) {
+                                displayChoices(event.choices);
+                            } else {
+                                // 如果没有选择，自动显示当前位置可用事件
+                                updateLocationEvents();
+                            }
+                        }, 3000); // 延长到3秒
                     }
                 };
+                
+                // 绑定点击事件
+                dialogueBox.addEventListener('click', currentDialogClickHandler);
             } else {
-                // 如果只有一句对话，等待打字效果完成后显示选项
+                // 如果只有一句对话，延长显示时间
+                tapIndicator.style.display = "none";
+                
                 setTimeout(function() {
-                    dialogueBox.onclick = null;
-                    tapIndicator.style.display = "none";
-                    
                     if (event.choices && event.choices.length > 0) {
                         displayChoices(event.choices);
+                    } else {
+                        // 如果没有选择，自动显示当前位置可用事件
+                        updateLocationEvents();
                     }
-                }, firstDialogue.text.length * 30 + 500);
+                }, 3000); // 延长到3秒，给用户更多阅读时间
+            }
+        }
+
+
+        function cleanupTypewriter() {
+            // 虽然不再使用打字机效果，但保留此函数用于清理
+            if (typewriterTimerId !== null) {
+                clearTimeout(typewriterTimerId);
+                typewriterTimerId = null;
             }
             
-            // 确保在初始阶段显示选项
-            if (event.dialogue.length === 1 && event.choices && event.choices.length > 0) {
-                setTimeout(function() {
-                    displayChoices(event.choices);
-                }, firstDialogue.text.length * 30 + 500);
+            const dialogueText = document.getElementById("dialogue-text");
+            if (dialogueText) {
+                dialogueText.dataset.isTyping = "false";
             }
         }
         
-        // 打字机效果
+        // 修改打字机效果函数，修复无限触发问题
         function typeWriter(element, text, index, speed) {
-            element.dataset.isTyping = "true";
+            // 直接显示完整文本，不使用动画效果
+            element.textContent = text;
+            element.dataset.isTyping = "false";
             
-            if (index < text.length) {
-                element.textContent += text.charAt(index);
-                index++;
-                setTimeout(function() {
-                    typeWriter(element, text, index, speed);
-                }, speed);
-            } else {
-                element.dataset.isTyping = "false";
+            // 清除任何可能存在的计时器
+            if (typewriterTimerId !== null) {
+                clearTimeout(typewriterTimerId);
+                typewriterTimerId = null;
             }
         }
         
@@ -4552,24 +4613,96 @@
             const choicesContainer = document.getElementById("choices-container");
             choicesContainer.innerHTML = "";
             
+            if (!choices || choices.length === 0) {
+                console.warn("尝试显示空选项");
+                return;
+            }
+            
+            console.log("显示选项:", choices.length);
+            
             choices.forEach(function(choice, index) {
                 const choiceBtn = document.createElement("div");
                 choiceBtn.className = "choice-btn";
                 choiceBtn.textContent = choice.text;
                 
+                // 增强按钮样式和交互性
+                choiceBtn.style.cursor = "pointer";
+                choiceBtn.style.pointerEvents = "auto";
+                choiceBtn.style.userSelect = "none";
+                choiceBtn.style.position = "relative";
+                choiceBtn.style.zIndex = "10"; // 确保在其他元素之上
+                
                 // 添加淡入动画
                 choiceBtn.style.opacity = "0";
                 choiceBtn.style.transform = "translateY(10px)";
                 
-                choiceBtn.onclick = function() {
-                    if (choice.action) {
-                        const result = choice.action();
+                // 添加点击和触摸事件
+                // 修改displayChoices函数中的事件处理部分
+                const handleClick = function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    // 防止重复点击
+                    if (this.dataset.processing === "true") return;
+                    this.dataset.processing = "true";
+                    
+                    // 添加点击视觉反馈
+                    this.style.transform = "translateY(2px)";
+                    this.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.2)";
+                    this.style.backgroundColor = "#30363d";
+                    
+                    setTimeout(() => {
+                        this.style.transform = "translateY(0)";
+                        this.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.2)";
+                        this.style.backgroundColor = "#21262d";
                         
-                        if (result) {
-                            processEvent(result);
+                        if (choice.action) {
+                            try {
+                                const result = choice.action();
+                                if (result) {
+                                    processEvent(result);
+                                }
+                            } catch (err) {
+                                console.error("选项执行错误:", err);
+                                showNotification("操作执行错误，请尝试其他选项");
+                            }
+                        }
+                        
+                        // 重置处理状态
+                        setTimeout(() => {
+                            this.dataset.processing = "false";
+                        }, 500);
+                    }, 100);
+                };
+                
+                choiceBtn.addEventListener('click', handleClick);
+                
+                // 绑定多种事件以确保在各种设备上工作
+                choiceBtn.addEventListener('click', handleClick);
+                choiceBtn.addEventListener('touchstart', function(e) {
+                    e.preventDefault(); // 阻止默认行为
+                    this.style.transform = "translateY(2px)";
+                    this.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.2)";
+                    this.style.backgroundColor = "#30363d";
+                });
+                
+                choiceBtn.addEventListener('touchend', function(e) {
+                    e.preventDefault(); // 阻止默认行为
+                    this.style.transform = "translateY(0)";
+                    this.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.2)";
+                    this.style.backgroundColor = "#21262d";
+                    
+                    if (choice.action) {
+                        try {
+                            const result = choice.action();
+                            if (result) {
+                                processEvent(result);
+                            }
+                        } catch (err) {
+                            console.error("选项执行错误:", err);
+                            showNotification("操作执行错误，请尝试其他选项");
                         }
                     }
-                };
+                });
                 
                 choicesContainer.appendChild(choiceBtn);
                 
@@ -4580,11 +4713,25 @@
                 }, 100 * index);
             });
         }
+
         
         // 执行当前地点的可用事件
         function executeLocationEvent(eventName) {
+            
             const location = gameData.gameState.location;
             const event = eventsData[eventName];
+
+            // 检查事件是否存在和是否可用
+            if (!event) return;
+            
+            // 判断这个事件是否会减少体力
+            const eventReducesStamina = event.execute.toString().includes('changeAttribute("stamina", -');
+            
+            // 如果会减少体力，检查当前体力是否足够
+            if (eventReducesStamina && gameData.player.attributes.stamina <= 10) {
+                showNotification("体力不足，请先休息恢复体力");
+                return;
+            }
             
             // 检查事件是否存在和是否可用
             if (!event) {
@@ -4623,14 +4770,21 @@
             
             if (result) {
                 processEvent(result);
+                // 给玩家额外的时间阅读结果，再推进时间
+                setTimeout(() => {
+                    advanceTime();
+                }, 3000); // 延长到3秒
+            } else {
+                // 如果没有结果文本，延迟一下再推进时间
+                setTimeout(() => {
+                    advanceTime();
+                }, 1500); // 即使没有文本也给1.5秒的缓冲
             }
-            
-            // 事件后时间推进
-            advanceTime();
         }
         
         // 更新地点可用事件
         function updateLocationEvents() {
+            
             const location = gameData.gameState.location;
             const locationData = locationsData[location];
             
@@ -4666,6 +4820,13 @@
                 choiceBtn.className = "choice-btn";
                 choiceBtn.textContent = event.name + " (消耗精力: " + event.energyCost + ")";
                 
+                // 增强按钮样式和交互性
+                choiceBtn.style.cursor = "pointer";
+                choiceBtn.style.pointerEvents = "auto";
+                choiceBtn.style.userSelect = "none";
+                choiceBtn.style.position = "relative";
+                choiceBtn.style.zIndex = "10"; // 确保在其他元素之上
+                
                 // 添加事件描述
                 if (event.description) {
                     const descriptionSpan = document.createElement("div");
@@ -4681,9 +4842,43 @@
                     choiceBtn.classList.add("disabled");
                     choiceBtn.title = "精力不足";
                 } else {
-                    choiceBtn.onclick = function() {
-                        executeLocationEvent(eventName);
+                    // 添加点击和触摸事件
+                    const handleExecuteEvent = function() {
+                        // 视觉反馈
+                        if (!choiceBtn.classList.contains("disabled")) {
+                            choiceBtn.style.transform = "translateY(2px)";
+                            choiceBtn.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.2)";
+                            choiceBtn.style.backgroundColor = "#30363d";
+                            
+                            // 延迟执行以显示点击效果
+                            setTimeout(() => {
+                                choiceBtn.style.transform = "translateY(0)";
+                                choiceBtn.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.2)";
+                                choiceBtn.style.backgroundColor = "#21262d";
+                                executeLocationEvent(eventName);
+                            }, 100);
+                        }
                     };
+                    
+                    choiceBtn.addEventListener('click', handleExecuteEvent);
+                    choiceBtn.addEventListener('touchstart', function(e) {
+                        if (!choiceBtn.classList.contains("disabled")) {
+                            e.preventDefault();
+                            choiceBtn.style.transform = "translateY(2px)";
+                            choiceBtn.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.2)";
+                            choiceBtn.style.backgroundColor = "#30363d";
+                        }
+                    });
+                    
+                    choiceBtn.addEventListener('touchend', function(e) {
+                        if (!choiceBtn.classList.contains("disabled")) {
+                            e.preventDefault();
+                            choiceBtn.style.transform = "translateY(0)";
+                            choiceBtn.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.2)";
+                            choiceBtn.style.backgroundColor = "#21262d";
+                            executeLocationEvent(eventName);
+                        }
+                    });
                 }
                 
                 choicesContainer.appendChild(choiceBtn);
@@ -4727,6 +4922,132 @@
                 return false;
             }
         }
+
+        function enhanceMenuButton() {
+            const menuButton = document.getElementById("menu-button");
+            
+            // 确保菜单按钮在最上层
+            menuButton.style.zIndex = "100";
+            
+            // 增大点击区域
+            menuButton.style.padding = "10px";
+            menuButton.style.margin = "-10px";
+            
+            // 添加明显的点击视觉反馈
+            menuButton.addEventListener('mousedown', function() {
+                this.style.transform = "scale(0.95)";
+                this.style.backgroundColor = "rgba(30, 37, 58, 0.9)";
+            });
+            
+            menuButton.addEventListener('mouseup', function() {
+                this.style.transform = "scale(1)";
+                this.style.backgroundColor = "rgba(13, 17, 23, 0.8)";
+            });
+            
+            // 确保点击事件正确绑定
+            menuButton.onclick = function(e) {
+                e.stopPropagation(); // 防止事件冒泡
+                document.getElementById("game-menu").style.opacity = "1";
+                document.getElementById("game-menu").style.visibility = "visible";
+                console.log("菜单按钮被点击");
+            };
+            
+            // 添加触摸事件支持
+            menuButton.addEventListener('touchstart', function(e) {
+                e.preventDefault(); // 阻止默认行为
+                this.style.transform = "scale(0.95)";
+                this.style.backgroundColor = "rgba(30, 37, 58, 0.9)";
+            });
+            
+            menuButton.addEventListener('touchend', function(e) {
+                e.preventDefault(); // 阻止默认行为
+                this.style.transform = "scale(1)";
+                this.style.backgroundColor = "rgba(13, 17, 23, 0.8)";
+                document.getElementById("game-menu").style.opacity = "1";
+                document.getElementById("game-menu").style.visibility = "visible";
+                console.log("菜单按钮被触摸点击");
+            });
+        }
+
+
+        function addDebugRecoveryFeatures() {
+            // 创建紧急恢复按钮 - 在游戏卡住时可以使用
+            const recoveryButton = document.createElement("button");
+            recoveryButton.textContent = "恢复游戏";
+            recoveryButton.style.position = "fixed";
+            recoveryButton.style.bottom = "10px";
+            recoveryButton.style.right = "10px";
+            recoveryButton.style.zIndex = "999";
+            recoveryButton.style.padding = "5px 10px";
+            recoveryButton.style.backgroundColor = "#f778ba";
+            recoveryButton.style.color = "#0d1117";
+            recoveryButton.style.border = "none";
+            recoveryButton.style.borderRadius = "5px";
+            recoveryButton.style.display = "none"; // 默认隐藏
+            
+            // 双击空白处显示恢复按钮
+            let lastClick = 0;
+            document.addEventListener('click', function(e) {
+                const now = new Date().getTime();
+                if (now - lastClick < 300) {
+                    recoveryButton.style.display = "block";
+                    setTimeout(() => {
+                        recoveryButton.style.display = "none";
+                    }, 5000);
+                }
+                lastClick = now;
+            });
+            
+            recoveryButton.onclick = function() {
+                // 尝试恢复游戏状态
+                updateLocationEvents();
+                showNotification("已尝试恢复游戏状态");
+                this.style.display = "none";
+            };
+            
+            document.body.appendChild(recoveryButton);
+        }
+        
+        // 在页面加载完成后调用这个函数
+        document.addEventListener('DOMContentLoaded', function() {
+            addDebugRecoveryFeatures();
+        });        
+
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error("游戏错误:", message, "at", source, ":", lineno, ":", colno);
+            showNotification("游戏出现错误，请刷新页面");
+            return true;
+        };
+        
+        // 2. 保证游戏状态一致性的函数
+        function ensureGameConsistency() {
+            // 确保游戏状态一致
+            if (!gameData.gameState.location) {
+                console.warn("位置未定义，重置为公寓");
+                gameData.gameState.location = "apartment";
+            }
+            
+            // 确保能量有合理值
+            if (gameData.gameState.energyLeft < 0) {
+                gameData.gameState.energyLeft = 0;
+            }
+            
+            // 更新UI状态
+            updateStatusDisplay();
+        }
+        
+        // 在游戏初始化和每次行动后调用此函数
+        function safeExecuteAction(action) {
+            try {
+                // 执行动作
+                action();
+                // 确保游戏状态一致
+                ensureGameConsistency();
+            } catch (e) {
+                console.error("执行动作时出错:", e);
+                showNotification("操作失败，请尝试其他选项");
+            }
+        }
         
         // 初始化游戏
         function initGame() {
@@ -4743,6 +5064,20 @@
             updateInventoryDisplay();
             updateMemoryLogDisplay();
             updateLogDisplay();
+            
+            // 增强菜单按钮
+            enhanceMenuButton();
+            
+            // 确保清理打字机状态
+            
+            
+            // 确保初始场景有选项可选
+            setTimeout(function() {
+                if (document.getElementById("choices-container").children.length === 0) {
+                    console.log("检测到没有选项，尝试更新位置事件");
+                    updateLocationEvents();
+                }
+            }, 3000);
             
             // 标题界面按钮
             document.getElementById("start-btn").addEventListener("click", function() {
